@@ -24,7 +24,10 @@ jobs:
         run: |
           cordova create app com.leilei.studytracker 学习监督
           cd app
-          cp ../index.html www/index.html
+          rm -rf www/*
+          cp ../www/index.html www/index.html
+          [ -f ../config.xml ] && cp ../config.xml .
+          [ -d ../resources ] && cp -r ../resources .
           cordova platform add android
           cordova build android
     
