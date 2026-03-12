@@ -28,9 +28,9 @@ jobs:
           cp ../www/index.html www/index.html
           [ -f ../config.xml ] && cp ../config.xml .
           [ -d ../resources ] && cp -r ../resources .
-          cordova platform add android
-          cordova build android
-    
+          cordova platform add android@latest
+          cordova build android -- --compileSdk=36
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
