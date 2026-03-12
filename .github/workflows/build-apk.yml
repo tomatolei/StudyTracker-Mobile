@@ -1,59 +1,35 @@
 name: Build APK
-
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
     
-      - name: Setup Node
+      - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
     
-      - name: Install Cordova
-        run: npm install -g cordova
+      - name: Install fixed version Cordova
+        run: npm install -g cordova@12.0.0
     
-      - name: Create and Build App
+      - name: Build APK
         run: |
-          # Install Java 17 (required for Cordova Android)
-          sudo apt-get update
-          sudo apt-get install -y openjdk-17-jdk
-          sudo update-java-alternatives -s java-1.17.0-openjdk-amd64
-          
-          # Set JAVA_HOME
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          
           cordova create app com.leilei.studytracker 学习监督
           cd app
-          
-          # Remove default www folder and copy our files
           rm -rf www/*
           cp ../www/index.html www/index.html
-          
-          # Copy config.xml
-          cp ../config.xml config.xml
-          
-          # Copy icon if exists
-          if [ -d ../resources/android/icon ]; then
-            mkdir -p resources/android/icon
-            cp ../resources/android/icon/* resources/android/icon/
-          fi
-          
-          # Add Android platform (use 11.0.0 for better Gradle compatibility)
+          [ -f ../config.xml ] && cp ../config.xml .
+          [ -d ../resources ] && cp -r ../resources .
           cordova platform add android@11.0.0
-          
-          # Build with Gradle wrapper (uses compatible Gradle version)
-          cd platforms/android
-          ./gradlew assembleDebug --no-daemon
+          cordova build android -- --gradleArg=-PcdvMinSdkVersion=23 --gradleArg=-PcdvTargetSdkVersion=33 --gradleArg=-PcdvCompileSdkVersion=33
     
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: 学习监督APK
           path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
