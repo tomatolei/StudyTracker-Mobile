@@ -20,7 +20,8 @@
     <preference name="ScrollEnabled" value="true" />
     <preference name="BackupWebStorage" value="none" />
     <platform name="android">
-        <preference name="android-showWhenLocked" value="true" />
-        <preference name="android-turnScreenOn" value="true" />
+        <preference name="android-compileSdkVersion" value="36" />
+        <preference name="android-targetSdkVersion" value="36" />
+        <preference name="android-minSdkVersion" value="22" />
     </platform>
 </widget>
