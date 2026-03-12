@@ -19,8 +19,8 @@ jobs:
     
       - name: Install Cordova
         run: npm install -g cordova
-    
-      - name: Create Cordova App
+
+      - name: Create App
         run: |
           cordova create app com.leilei.studytracker 学习监督
           cd app
@@ -28,11 +28,11 @@ jobs:
           cp ../www/index.html www/index.html
           cordova platform add android
 
-      - name: Fix Android SDK Version
+      - name: Fix SDK Version
         run: |
-          cd app/platforms/android/app
-          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' build.gradle
-          sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/' build.gradle
+          cd app
+          sed -i 's/compileSdkVersion = 33/compileSdkVersion = 36/g' platforms/android/app/build.gradle
+          sed -i 's/targetSdkVersion = 33/targetSdkVersion = 36/g' platforms/android/app/build.gradle
 
       - name: Build APK
         run: |
