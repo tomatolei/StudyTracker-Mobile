@@ -8,6 +8,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      # 新增：安装Java 17（Cordova Android 11要求）
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
     
       - name: Setup Node 18
         uses: actions/setup-node@v4
