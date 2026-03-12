@@ -37,9 +37,17 @@ jobs:
             cp ../resources/android/icon/* resources/android/icon/
           fi
           
-          # Add Android platform and build
-          cordova platform add android
-          cordova build android
+          # Add Android platform
+          cordova platform add android@12.0.0
+          
+          # Set Gradle options
+          export ORG_GRADLE_PROJECT_cdvMinSdkVersion=22
+          export ORG_GRADLE_PROJECT_cdvTargetSdkVersion=33
+          export ORG_GRADLE_PROJECT_cdvCompileSdkVersion=34
+          
+          # Build with Gradle
+          cd platforms/android
+          ./gradlew cdvBuildDebug -PcdvMinSdkVersion=22 -PcdvTargetSdkVersion=33 -PcdvCompileSdkVersion=34
     
       - name: Upload APK
         uses: actions/upload-artifact@v4
