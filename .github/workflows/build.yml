@@ -17,24 +17,26 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
+      - name: Install Android SDK 36
+        run: |
+          yes | sdkmanager "platforms;android-36"
+
       - name: Build App
         run: |
           cordova create app com.leilei.studytracker 学习监督
           cd app
           rm -rf www/*
           cp ../www/index.html www/index.html
-          [ -f ../config.xml ] && cp ../config.xml .
           cordova platform add android
           cordova build android
 
-      - name: Show APK files
+      - name: Find APK
         run: |
-          echo "APK files:"
-          find app -name "*.apk"
+          find . -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: 学习监督APK
           path: |
-            app/**/*.apk
+            **/*.apk
