@@ -21,6 +21,11 @@ jobs:
     
       - name: Create and Build App
         run: |
+          # Install Java 17 (required for Cordova Android)
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk
+          sudo update-java-alternatives -s java-1.17.0-openjdk-amd64
+          
           cordova create app com.leilei.studytracker 学习监督
           cd app
           
