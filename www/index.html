@@ -699,37 +699,80 @@
         
         <!-- 使用说明对话框 -->
         <div class="dialog-overlay" v-if="showHelpDialog" @click="showHelpDialog = false">
-            <div class="dialog" style="max-width:400px;max-height:85vh;overflow-y:auto;" @click.stop>
+            <div class="dialog" style="max-width:450px;max-height:85vh;overflow-y:auto;" @click.stop>
                 <div class="dialog-title">📖 使用说明</div>
                 <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
-                    <div style="margin-bottom:15px;">
-                        <div style="font-weight:bold;color:#667eea;margin-bottom:5px;">🏠 首页功能</div>
-                        <div style="margin-left:12px;">• 顶部显示孩子信息、今日心情，点击心情可以切换心情</div>
-                        <div style="margin-left:12px;">• 今日统计：查看当天作业总数、完成情况、总用时</div>
-                        <div style="margin-left:12px;">• 今日作业：显示当天布置的作业，输入用时点击提交即可</div>
-                        <div style="margin-left:12px;">• 完成历史：查看当天已完成的作业记录</div>
+                    <!-- 快速入门 -->
+                    <div style="margin-bottom:20px;padding:15px;background:linear-gradient(135deg, #667eea15 0%, #764ba215 100%);border-radius:10px;">
+                        <div style="font-weight:bold;color:#667eea;margin-bottom:10px;font-size:14px;">🚀 快速入门</div>
+                        <div style="margin-left:8px;">1. 点击「设置」→「孩子信息」填写孩子基本信息</div>
+                        <div style="margin-left:8px;">2. 点击首页「+」按钮，选择今天要布置的作业</div>
+                        <div style="margin-left:8px;">3. 孩子完成作业后输入实际用时，点击「提交」</div>
+                        <div style="margin-left:8px;">4. 切换到「报告」页面查看学习统计和排行</div>
                     </div>
-                    <div style="margin-bottom:15px;">
-                        <div style="font-weight:bold;color:#667eea;margin-bottom:5px;">📝 作业操作</div>
-                        <div style="margin-left:12px;">• 布置作业：点击今日统计右上角的➕按钮，选择要布置的作业</div>
-                        <div style="margin-left:12px;">• 提交作业：输入实际用时，点击提交，异常时间会提示填写备注</div>
-                        <div style="margin-left:12px;">• 重新布置：点击底部的重新布置按钮，可以清空当天作业重新布置</div>
+
+                    <!-- 首页功能 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:10px;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">🏠 首页功能</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>孩子信息区域</strong>：显示孩子姓名、年级、年龄、坚持学习天数，点击头像可以修改信息</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>今日心情</strong>：点击右侧表情图标可以选择今日心情，自动保存</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>今日统计</strong>：实时显示当天作业总数、已完成/进行中数量、总学习时长</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>今日作业</strong>：显示当天布置的作业，输入用时点击提交即可，异常时间会提示填写备注</div>
+                        <div style="margin-left:8px;">• <strong>完成历史</strong>：查看当天所有已完成的作业记录，包含用时、预期时间、异常标记等</div>
                     </div>
-                    <div style="margin-bottom:15px;">
-                        <div style="font-weight:bold;color:#667eea;margin-bottom:5px;">📊 报告页面</div>
-                        <div style="margin-left:12px;">• 本周摘要：查看最近7天的学习汇总数据</div>
-                        <div style="margin-left:12px;">• 7天趋势：查看最近7天的作业量和学习时长变化</div>
-                        <div style="margin-left:12px;">• 排行：查看各科目作业数量、学习时长的排行</div>
-                        <div style="margin-left:12px;">• 学科分布：查看各科目作业数量占比</div>
+
+                    <!-- 作业管理 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:10px;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">📝 作业管理</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>布置作业</strong>：点击今日统计右上角的「+」按钮，勾选要布置的作业，点击「布置作业」即可</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>提交作业</strong>：孩子完成后在输入框填写实际用时，点击「提交」，如果用时偏离历史平均30%会提示填写异常理由</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>重新布置</strong>：点击底部「重新布置」按钮，可以清空当天所有作业，重新布置</div>
+                        <div style="margin-left:8px;">• <strong>历史记录</strong>：点击今日统计右上角的「📜」按钮，可以查看所有历史完成记录</div>
                     </div>
-                    <div style="margin-bottom:15px;">
-                        <div style="font-weight:bold;color:#667eea;margin-bottom:5px;">⚙️ 设置页面</div>
-                        <div style="margin-left:12px;">• 科目配置：编辑各科目对应的作业名称和预计时间</div>
-                        <div style="margin-left:12px;">• 孩子信息：修改孩子的姓名、年级、年龄、性别、头像</div>
-                        <div style="margin-left:12px;">• 数据管理：备份数据到本地、从备份恢复、清空数据</div>
+
+                    <!-- 报告页面 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:10px;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">📊 报告页面</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>本周摘要</strong>：统计最近7天总作业数、总学习时长、学习天数、日均分钟、日均作业数</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>7天学习趋势</strong>：柱状图显示最近7天每天的作业数量和学习时长变化</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>作业数量排行</strong>：统计各科目总作业数，按数量从高到低排序，带进度条显示</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>学习时长排行</strong>：统计各科目总学习时长，按时长从高到低排序，带进度条显示</div>
+                        <div style="margin-left:8px;">• <strong>学科分布</strong>：直观显示各科目作业数量占比</div>
                     </div>
-                    <div style="color:#999;font-size:12px;margin-top:20px;padding-top:10px;border-top:1px solid #eee;">
-                        💡 提示：所有数据都保存在本地，卸载应用会丢失数据，请定期备份！
+
+                    <!-- 设置页面 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:10px;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">⚙️ 设置页面</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>科目作业配置</strong>：编辑语文、数学、英语三个科目的作业名称和预计完成时间，修改后自动生效</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>孩子信息</strong>：修改孩子的姓名、年级、年龄、性别、头像，头像自动压缩保存</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• <strong>数据管理</strong>：
+                          <div style="margin-left:12px;margin-top:3px;">- 备份数据：将所有数据备份为文本文件，保存到手机Download目录</div>
+                          <div style="margin-left:12px;margin-top:3px;">- 恢复数据：从备份文件恢复所有数据，会覆盖当前数据</div>
+                          <div style="margin-left:12px;margin-top:3px;">- 重置数据：支持清空历史记录、清空当天作业、重置全部数据</div>
+                        </div>
+                        <div style="margin-left:8px;">• <strong>使用说明</strong>：查看本帮助文档</div>
+                    </div>
+
+                    <!-- 常见问题 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#fff3cd40;border-radius:10px;">
+                        <div style="font-weight:bold;color:#856404;margin-bottom:10px;font-size:14px;">❓ 常见问题</div>
+                        <div style="margin-left:8px;margin-bottom:8px;"><strong>Q：为什么有些作业提交时提示填写异常理由？</strong><br/>
+                        A：当本次用时偏离该作业历史平均时间超过30%时，会提示填写异常理由，方便后续分析原因。首次完成的作业不会提示。</div>
+                        <div style="margin-left:8px;margin-bottom:8px;"><strong>Q：备份的文件保存在哪里？</strong><br/>
+                        A：备份文件会自动保存到手机内置存储的「Download」目录，文件名格式为「学习进度备份_日期.txt」。</div>
+                        <div style="margin-left:8px;margin-bottom:8px;"><strong>Q：换手机了怎么迁移数据？</strong><br/>
+                        A：在旧手机点击「备份数据」，把备份文件传到新手机，在新手机点击「恢复数据」选择该文件即可。</div>
+                        <div style="margin-left:8px;"><strong>Q：头像上传失败怎么办？</strong><br/>
+                        A：系统会自动压缩头像到200px宽度，建议上传小于5MB的JPG/PNG图片，太大的图片会自动压缩。</div>
+                    </div>
+
+                    <!-- 温馨提示 -->
+                    <div style="margin-bottom:15px;padding:15px;background:linear-gradient(135deg, #22c55e15 0%, #16a34a15 100%);border-radius:10px;">
+                        <div style="font-weight:bold;color:#166534;margin-bottom:10px;font-size:14px;">💡 温馨提示</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• 所有数据都保存在本地，卸载应用或清除浏览器缓存会丢失数据，请定期备份！</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• 建议每周备份一次数据，防止数据丢失。</div>
+                        <div style="margin-left:8px;margin-bottom:5px;">• 头像会自动压缩到合适尺寸，不会占用太多存储空间。</div>
+                        <div style="margin-left:8px;">• 异常检测功能可以帮助你发现孩子学习中的异常情况，及时调整学习计划。</div>
                     </div>
                 </div>
                 <div class="dialog-buttons">
