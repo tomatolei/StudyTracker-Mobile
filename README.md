@@ -1,162 +1,207 @@
-# 儿童学习进度监督系统 - 手机版 APK 打包说明
+# 📚 儿童学习进度监督系统
 
----
+一款专为儿童设计的学习进度管理应用，帮助孩子培养良好的学习习惯，让家长随时了解孩子的学习情况。
 
-## 📱 方案一：在线打包（推荐，最简单）
+## ✨ 主要功能
 
-### 步骤 1：准备文件
-确保 `www/index.html` 文件已准备好
+### 🏠 首页功能
+- **孩子信息管理**：显示孩子姓名、年级、年龄、性别，支持自定义头像
+- **今日心情**：4 种心情表情可选（😃😐😔😤），记录孩子每天的学习心情
+- **作业统计**：实时显示总作业数、已完成、进行中、总用时
+- **作业管理**：
+  - 分科目布置作业（语文、数学、英语）
+  - 输入实际用时，自动对比历史平均时间
+  - 异常时间自动提示填写备注
+  - 完成历史随时查看
 
-### 步骤 2：选择打包服务
+### 📊 统计报告
+- **本周摘要**：5 个核心指标（总作业、总分钟、学习天数、日均分钟、日均作业）
+- **7 天趋势**：柱状图展示最近 7 天的作业量和学习时长变化
+- **作业排行**：各科目作业数量排行，一目了然
+- **时长排行**：各科目学习时长排行，了解时间分配
+- **学科分布**：饼图展示各科目作业占比
 
-| 服务 | 网址 | 费用 | 说明 |
-|------|------|------|------|
-| **WebIntoApp** | https://www.webintoapp.com | 免费 | 推荐，无广告 |
-| **AppsGeyser** | https://www.appsgeyser.com | 免费 | 有广告 |
-| **Median.co** | https://median.co | 付费 | 质量好 |
+### ⚙️ 系统设置
+- **科目配置**：自定义各科目的作业名称和预计时间
+- **孩子信息**：随时修改孩子基本信息和头像
+- **数据管理**：
+  - 备份数据到本地
+  - 从备份恢复数据
+  - 清空历史/当天/全部数据
+- **使用说明**：内置完整的功能使用文档
 
-### 步骤 3：上传文件
-1. 访问上述任一网站
-2. 选择"HTML to APK"或"Website to APK"
-3. 上传 `www` 文件夹或直接上传 `index.html`
-4. 配置应用名称：**儿童学习进度监督**
-5. 配置应用图标：上传 `assets/icon.png`（可选）
+## 🎨 设计特色
 
-### 步骤 4：下载 APK
-1. 等待打包完成（约 5-10 分钟）
-2. 下载生成的 APK 文件
-3. 发送到手机安装
+- **渐变配色**：柔和的渐变色彩，视觉舒适
+- **圆角卡片**：统一的圆角设计，现代简洁
+- **响应式布局**：完美适配手机屏幕
+- **交互动画**：流畅的过渡动画，提升使用体验
 
----
+## 📱 打包成 APK
 
-## 📱 方案二：使用 Capacitor 打包（需要技术环境）
+### 前置准备
 
-### 环境要求
-- Node.js 14+
-- Android Studio
-- Java JDK 8+
+1. **准备图标（可选）**
+   - 尺寸：512x512 或 1024x1024 像素
+   - 格式：PNG（支持透明背景）
+   - 命名：`icon.png`
+   - 位置：`resources/android/icon/icon.png`
 
-### 步骤 1：初始化项目
+2. **上传到 GitHub**
+   ```
+   StudyTracker-Mobile/
+   ├── www/
+   │   └── index.html          # 主程序（必需）
+   ├── config.xml              # Cordova 配置（必需）
+   ├── .github/
+   │   └── workflows/
+   │       └── build-apk.yml   # 打包流程（必需）
+   ├── resources/
+   │   └── android/
+   │       └── icon/
+   │           └── icon.png    # 应用图标（可选）
+   └── README.md               # 本文件
+   ```
+
+### 打包步骤
+
+1. **上传文件**
+   - 将上述文件上传到你的 GitHub 仓库
+
+2. **运行打包**
+   - 在 GitHub 页面点击 **"Actions"** 标签
+   - 选择 **"Build APK"** 工作流
+   - 点击 **"Run workflow"** 按钮
+   - 选择分支（通常是 main/master）
+
+3. **下载 APK**
+   - 等待打包完成（首次约 3-5 分钟）
+   - 点击生成的记录进入详情页
+   - 在 **"Artifacts"** 区域下载 `apk.zip`
+   - 解压后得到 `app-debug.apk`
+
+4. **安装使用**
+   - 将 APK 传到手机
+   - 允许安装未知来源应用
+   - 安装并打开
+
+### 更新版本
+
+修改代码后，只需：
+1. 提交更改到 GitHub
+2. 重新运行 Actions 工作流
+3. 下载新的 APK 覆盖安装
+
+## 🛠️ 本地开发
+
+### 使用 Cordova 本地调试
+
 ```bash
-cd C:\Users\leilei\Desktop\StudyTracker-Mobile
-npm init -y
-npm install @capacitor/core @capacitor/cli
-npx cap init
-```
-
-### 步骤 2：配置 Capacitor
-编辑 `capacitor.config.json`：
-```json
-{
-  "appId": "com.studytracker.app",
-  "appName": "儿童学习进度监督",
-  "webDir": "www",
-  "bundledWebRuntime": false
-}
-```
-
-### 步骤 3：添加安卓平台
-```bash
-npm install @capacitor/android
-npx cap add android
-npx cap sync
-```
-
-### 步骤 4：打开 Android Studio
-```bash
-npx cap open android
-```
-
-### 步骤 5：生成 APK
-1. 在 Android Studio 中点击 **Build → Build Bundle(s) / APK(s) → Build APK(s)**
-2. 等待编译完成
-3. APK 文件位置：`android/app/build/outputs/apk/debug/app-debug.apk`
-
----
-
-## 📱 方案三：使用 Cordova 打包
-
-### 环境要求
-- Node.js 14+
-- Java JDK 8+
-- Android SDK
-
-### 步骤 1：安装 Cordova
-```bash
+# 安装 Cordova
 npm install -g cordova
-```
 
-### 步骤 2：创建项目
-```bash
-cd C:\Users\leilei\Desktop
-cordova create StudyTracker-Mobile com.studytracker.app 儿童学习进度监督
-cd StudyTracker-Mobile
-```
+# 创建项目
+cordova create app com.leilei.studytracker 学习监督
+cd app
 
-### 步骤 3：配置项目
-```bash
-# 删除默认文件
-rm -rf www/*
+# 替换文件
+cp ../www/index.html www/index.html
+cp ../config.xml config.xml
 
-# 复制网页文件
-cp -r ../StudyTracker-Mobile/www/* www/
-
-# 添加安卓平台
+# 添加 Android 平台
 cordova platform add android
+
+# 运行调试
+cordova run android
 ```
 
-### 步骤 4：打包 APK
-```bash
-cordova build android
+## 📋 配置文件说明
+
+### config.xml
+
+```xml
+<widget id="com.leilei.studytracker" version="1.0.0">
+    <name>学习监督</name>
+    <content src="index.html" />
+    <icon src="resources/android/icon/icon.png" density="xxxhdpi" />
+</widget>
 ```
 
-APK 文件位置：`platforms/android/app/build/outputs/apk/debug/app-debug.apk`
+- `id`: 应用包名
+- `version`: 应用版本号
+- `content`: 启动页面
+- `icon`: 应用图标路径
+
+## 📊 数据存储
+
+### 本地存储（localStorage）
+
+所有数据保存在本地，包括：
+- `currentChild`: 孩子信息
+- `childMood`: 今日心情
+- `todayHomework`: 当天作业
+- `homeworkHistory`: 历史完成记录
+- `subjectConfig`: 科目作业配置
+- `childAvatar`: 孩子头像（Base64 编码）
+
+### 数据备份
+
+- **导出**：生成 JSON 文件，包含所有数据
+- **导入**：选择备份文件，恢复所有数据
+- **建议**：定期备份，防止数据丢失
+
+## 🎯 使用技巧
+
+### 1. 异常时间检测
+- 系统会自动计算每项作业的历史平均用时
+- 当实际用时偏离平均值 **±30%** 时，会提示填写备注
+- 首次完成的作业不会触发异常检测
+
+### 2. 科目配置
+- 默认配置包含常用作业类型
+- 可根据实际情况自定义作业名称和预计时间
+- 建议和孩子一起制定合理的预计时间
+
+### 3. 数据管理
+- **清空历史**：删除所有完成记录，统计归零
+- **清空当天**：只删除今天的作业，保留历史
+- **重置全部**：删除所有数据，重新开始
+
+## ⚠️ 注意事项
+
+1. **数据安全**
+   - 所有数据存储在本地，卸载应用会丢失数据
+   - 建议每周备份一次重要数据
+   - 更换设备时先备份再迁移
+
+2. **头像大小**
+   - 上传的头像会自动压缩到 200px 宽度
+   - 压缩后约几十 KB，不会占用太多空间
+   - 支持 JPG、PNG 等常见图片格式
+
+3. **浏览器兼容**
+   - 推荐使用 Chrome、Edge 等现代浏览器
+   - 部分老版本浏览器可能不支持某些功能
+
+## 📝 更新日志
+
+### v1.0.0
+- ✨ 初始版本发布
+- 📱 完整的作业管理功能
+- 📊 详细的学习统计报告
+- ⚙️ 灵活的科目配置
+- 💾 本地数据备份恢复
+- 🎨 精美的 UI 设计
+
+## 🤝 技术支持
+
+如有问题或建议，欢迎联系：
+- 📧 Email: 823921@qq.com
+
+## 📄 许可证
+
+本项目仅供个人学习使用。
 
 ---
 
-## 🎨 应用图标制作
-
-### 要求
-- 尺寸：512x512 像素
-- 格式：PNG
-- 背景：透明或纯色
-
-### 在线制作工具
-- **Figma**: https://www.figma.com
-- **Canva**: https://www.canva.com
-- **Icon Kitchen**: https://icon.kitchen
-
----
-
-## 📋 打包清单
-
-- [ ] `www/index.html` 文件已准备
-- [ ] 选择打包方案（在线/Capacitor/Cordova）
-- [ ] 准备应用图标（512x512 PNG）
-- [ ] 配置应用名称和包名
-- [ ] 生成 APK 文件
-- [ ] 测试安装和运行
-
----
-
-## 📞 常见问题
-
-### Q: 在线打包需要多长时间？
-A: 通常 5-10 分钟，取决于文件大小。
-
-### Q: APK 文件有多大？
-A: 约 2-5MB（在线打包），30-50MB（Capacitor/Cordova）。
-
-### Q: 可以在 iPhone 上使用吗？
-A: 需要另外打包 iOS 版本（.ipa 文件）。
-
-### Q: 数据会同步吗？
-A: 手机版和网页版数据独立存储，暂不同步。
-
----
-
-## 📅 版本信息
-
-- 版本：v1.0 Mobile
-- 打包日期：2026 年 3 月 10 日
-- 目标平台：Android 10+
+**Made with ❤️ for better learning habits**
