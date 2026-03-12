@@ -4,25 +4,24 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04 # 最稳定的旧版系统，自带Gradle 7.x，完全兼容
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
-      # 新增：安装Java 17（Cordova Android 11要求）
-      - name: Setup Java 17
+    
+      - name: Setup Java 11 # 和Gradle 7完全匹配，不会有版本问题
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'adopt'
+          java-version: '11'
     
-      - name: Setup Node 18
+      - name: Setup Node 16 # 稳定兼容Cordova 10
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '16'
     
-      - name: Install fixed version Cordova
-        run: npm install -g cordova@12.0.0
+      - name: Install Cordova 10.0.0 # 最稳定的Cordova版本，无兼容性问题
+        run: npm install -g cordova@10.0.0
     
       - name: Build APK
         run: |
@@ -32,11 +31,12 @@ jobs:
           cp ../www/index.html www/index.html
           [ -f ../config.xml ] && cp ../config.xml .
           [ -d ../resources ] && cp -r ../resources .
-          cordova platform add android@11.0.0
-          cordova build android -- --gradleArg=-PcdvMinSdkVersion=23 --gradleArg=-PcdvTargetSdkVersion=33 --gradleArg=-PcdvCompileSdkVersion=33
+          # 使用最稳定的Android 9.1.0平台，完全兼容Gradle 7
+          cordova platform add android@9.1.0
+          cordova build android --release -- --keystore=../debug.keystore --storePassword=android --alias=androiddebugkey --password=android
     
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: 学习监督APK
-          path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/platforms/android/app/build/outputs/apk/release/app-release.apk
