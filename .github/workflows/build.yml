@@ -14,19 +14,27 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install -g cordova
+      - name: Install Cordova
+        run: npm install -g cordova
 
-      - name: Build
+      - name: Build App
         run: |
           cordova create app com.leilei.studytracker 学习监督
           cd app
           rm -rf www/*
           cp ../www/index.html www/index.html
-          cp ../config.xml .
+          [ -f ../config.xml ] && cp ../config.xml .
           cordova platform add android
           cordova build android
 
-      - uses: actions/upload-artifact@v4
+      - name: Show APK files
+        run: |
+          echo "APK files:"
+          find app -name "*.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: 学习监督APK
-          path: app/platforms/android/app/build/outputs/apk/debug
+          path: |
+            app/**/*.apk
