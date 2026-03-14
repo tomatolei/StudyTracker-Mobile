@@ -1,4 +1,4 @@
-name: Build APK
+name: Build StudyTracker APK
 
 on:
   workflow_dispatch:
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Cordova project
+      - name: Create Cordova App
         run: |
           cordova create app com.leilei.studytracker 学习监督
           cp config.xml app/config.xml
@@ -38,6 +38,11 @@ jobs:
         working-directory: app
         run: cordova platform add android@12
 
+      # ⭐ 修复 Gradle 版本
+      - name: Fix Gradle
+        working-directory: app/platforms/android
+        run: ./gradlew wrapper --gradle-version 8.7
+
       - name: Build APK
         working-directory: app
         run: cordova build android --release
@@ -45,5 +50,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: StudyTracker-APK
           path: app/platforms/android/app/build/outputs/**/*.apk
