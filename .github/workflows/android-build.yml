@@ -5,7 +5,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -36,20 +35,16 @@ jobs:
         cp config.xml app/config.xml
         cp -r www app/
 
-    - name: Add Android platform
-      working-directory: app
-      run: cordova platform add android@12
-
-    # ⭐ 强制 Gradle 8.7
-    - name: Downgrade Gradle
-      working-directory: app/platforms/android
+    - name: Add Android Platform
       run: |
-        chmod +x gradlew
-        ./gradlew wrapper --gradle-version 8.7
+        cd app
+        cordova platform add android@12
+        ls -R
 
-    - name: Build Release APK
-      working-directory: app
-      run: cordova build android --release
+    - name: Build APK
+      run: |
+        cd app
+        cordova build android --release
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
