@@ -1,0 +1,97 @@
+name: Build StudyTracker APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Java
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Cordova
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      # Android SDK
+      - name: Setup Android
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK
+        run: |
+          yes | sdkmanager "platform-tools"
+          yes | sdkmanager "platforms;android-36"
+          yes | sdkmanager "build-tools;36.0.0"
+
+      # 自动增加版本号
+      - name: Auto increase versionCode
+        run: |
+          CODE=$(grep -o 'android-versionCode="[0-9]*"' config.xml | grep -o '[0-9]*')
+          NEWCODE=$((CODE+1))
+          sed -i "s/android-versionCode=\"$CODE\"/android-versionCode=\"$NEWCODE\"/" config.xml
+          echo "New versionCode=$NEWCODE"
+
+      # 创建 Cordova 项目
+      - name: Prepare App
+        run: |
+          cordova create app com.leilei.studytracker 学习监督
+          cd app
+
+          rm -rf www/*
+          cp ../www/index.html www/index.html
+
+          cp ../config.xml .
+          cp ../studytracker.keystore .
+
+          [ -d ../resources ] && cp -r ../resources .
+
+          cordova platform add android@12
+
+      # 构建
+      - name: Build Release
+        run: |
+          cd app
+          cordova build android --release -- \
+            --keystore=studytracker.keystore \
+            --storePassword=leilei \
+            --alias=studytracker \
+            --password=leilei
+
+      # 上传构建文件
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudyTracker-APK
+          path: app/platforms/android/app/build/outputs/**/*.apk
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudyTracker-AAB
+          path: app/platforms/android/app/build/outputs/**/*.aab
+
+      # 自动创建 Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: StudyTracker Build ${{ github.run_number }}
+          files: |
+            app/platforms/android/app/build/outputs/**/*.apk
+            app/platforms/android/app/build/outputs/**/*.aab

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>修复历史记录</title></head>
+<body>
+<h1>历史记录修复工具</h1>
+<p>点击按钮修复重复的历史记录</p>
+<button onclick="fixHistory()">🔧 修复重复记录</button>
+<pre id="log"></pre>
+
+<script>
+function fixHistory() {
+    const history = JSON.parse(localStorage.getItem('homeworkHistory') || '[]');
+    log('清理前：' + history.length + ' 条');
+    log(JSON.stringify(history, null, 2));
+    
+    // 按 dateKey 分组
+    const map = {};
+    history.forEach(record => {
+        const key = record.dateKey;
+        if (!map[key]) {
+            map[key] = { dateKey: key, date: record.date, items: [] };
+        }
+        // 合并作业
+        const ids = new Set(map[key].items.map(i => i.template_id));
+        record.items.forEach(item => {
+            if (!ids.has(item.template_id)) {
+                map[key].items.push(item);
+                ids.add(item.template_id);
+            }
+        });
+    });
+    
+    const result = Object.values(map).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    log('\n清理后：' + result.length + ' 条');
+    log(JSON.stringify(result, null, 2));
+    
+    localStorage.setItem('homeworkHistory', JSON.stringify(result));
+    alert('修复完成！从 ' + history.length + ' 条清理到 ' + result.length + ' 条');
+}
+
+function log(msg) {
+    document.getElementById('log').textContent += msg + '\n';
+}
+</script>
+</body>
+</html>

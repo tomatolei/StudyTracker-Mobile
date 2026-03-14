@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.leilei.studytracker" version="1.0.0"
+xmlns="http://www.w3.org/ns/widgets"
+xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+    <name>学习监督</name>
+    <description>儿童学习进度监督系统</description>
+
+    <author email="823921@qq.com" href="https://example.com">
+        leilei
+    </author>
+
+    <content src="index.html" />
+
+    <icon src="resources/android/icon/icon.png" />
+
+    <access origin="*" />
+
+    <preference name="Fullscreen" value="false" />
+    <preference name="ScrollEnabled" value="true" />
+    <preference name="BackupWebStorage" value="none" />
+
+    <platform name="android">
+        <preference name="android-compileSdkVersion" value="36" />
+        <preference name="android-targetSdkVersion" value="36" />
+        <preference name="android-minSdkVersion" value="22" />
+    </platform>
+
+</widget>

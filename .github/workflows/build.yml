@@ -1,0 +1,79 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Java
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Cordova
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      # Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager "platform-tools"
+          yes | sdkmanager "platforms;android-36"
+          yes | sdkmanager "build-tools;36.0.0"
+
+      # 创建项目
+      - name: Prepare App
+        run: |
+          cordova create app com.leilei.studytracker 学习监督
+          cd app
+
+          rm -rf www/*
+          cp ../www/index.html www/index.html
+
+          [ -f ../config.xml ] && cp ../config.xml .
+          [ -d ../resources ] && cp -r ../resources .
+          [ -f ../studytracker.keystore ] && cp ../studytracker.keystore .
+
+          # 锁定 Cordova Android 版本
+          cordova platform add android@12
+
+      # 构建 APK
+      - name: Build Release
+        run: |
+          cd app
+          cordova build android --release -- \
+            --keystore=studytracker.keystore \
+            --storePassword=leilei \
+            --alias=studytracker \
+            --password=leilei
+
+      # 上传 APK
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: 学习监督 APK
+          path: app/platforms/android/app/build/outputs/**/*.apk
+
+      # 上传 AAB（Play 商店）
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: 学习监督 AAB
+          path: app/platforms/android/app/build/outputs/**/*.aab

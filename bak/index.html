@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#667eea">
+    <title>儿童学习进度监督</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { overflow-x: hidden; }
+        body { margin: 0; background: linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; padding: 15px; padding-bottom: calc(80px + env(safe-area-inset-bottom)); min-height: 100vh; }
+        
+        /* 全局动画 */
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes ripple { 0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); } 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); } }
+        @keyframes confetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        
+        /* 饼图图例样式 - 强制每行 2 个 */
+        .chart-container { position: relative; }
+        .chart-container .legend-container { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; margin-top: 15px !important; }
+        .chart-container .legend-item { display: flex !important; justify-content: center !important; align-items: center !important; gap: 6px !important; }
+        
+        /* 底部导航栏 */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; border-radius: 20px 20px 0 0; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 16px; color: #999; font-size: 11px; cursor: pointer; transition: all 0.3s ease; border-radius: 12px; }
+        .nav-item.active { color: #667eea; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); animation: bounce 0.5s ease; }
+        .nav-icon { font-size: 22px; transition: all 0.3s ease; }
+        .nav-item:active .nav-icon { transform: scale(0.9); }
+        
+        /* 页面容器 */
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        
+        /* 顶部孩子信息 */
+        .child-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); position: relative; overflow: hidden; }
+        .child-header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
+        .child-avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; }
+        .child-avatar:active { animation: pulse 0.3s ease; }
+        .child-info { flex: 1; position: relative; z-index: 1; pointer-events: none; }
+        .child-info * { pointer-events: auto; }
+        .child-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .child-detail { font-size: 14px; opacity: 0.95; }
+        .mood-display { font-size: 28px; background: rgba(255,255,255,0.2); padding: 10px 14px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; position: relative; z-index: 10; pointer-events: auto; }
+        .mood-display:active { animation: bounce 0.3s ease; }
+        
+        /* 今日统计 */
+        .stats-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,0.2); }
+        .stats-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .stats-title button { transition: all 0.3s ease; }
+        .stats-title button:active { transform: scale(0.95); }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .stat-item { text-align: center; padding: 15px 8px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 16px; transition: all 0.3s ease; border: 1px solid rgba(102, 126, 234, 0.1); }
+        .stat-item:active { transform: scale(0.95); }
+        .stat-value { font-size: 22px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-label { font-size: 11px; color: #64748b; margin-top: 5px; }
+        
+        /* 今日作业列表 */
+        .homework-section { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,0.2); }
+        .section-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+        .homework-list { display: flex; flex-direction: column; gap: 12px; }
+        .homework-item { padding: 16px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 16px; border-left: 5px solid #94a3b8; transition: all 0.3s ease; border: 1px solid rgba(148, 163, 184, 0.2); }
+        .homework-item.doing { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border-left-color: #f97316; border-color: rgba(249, 115, 22, 0.2); }
+        .homework-item.done { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left-color: #22c55e; border-color: rgba(34, 197, 94, 0.2); animation: pulse 0.5s ease; }
+        .homework-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .subject-tag { padding: 4px 10px; border-radius: 8px; font-size: 15px; font-weight: bold; }
+        .subject-tag.yuwen { background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); color: #991b1b; }
+        .subject-tag.shuxue { background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%); color: #1e40af; }
+        .subject-tag.yingyu { background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); color: #854d0e; }
+        .homework-name { font-size: 15px; font-weight: bold; flex: 1; color: #1e293b; }
+        .homework-status { font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: bold; }
+        .homework-status.doing { background: linear-gradient(135deg, #fdba74 0%, #fb923c 100%); color: #7c2d12; }
+        .homework-status.done { background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); color: #14532d; }
+        .homework-input { display: flex; flex-direction: column; gap: 8px; }
+.homework-input-row { display: flex; align-items: center; gap: 8px; }
+        .homework-input input { flex: 1; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; transition: all 0.3s ease; background: white; }
+        .homework-input input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .homework-input button { padding: 10px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+        .homework-input button:active { transform: scale(0.95); }
+        .homework-result { font-size: 14px; color: #16a34a; font-weight: bold; }
+        .time-compare { font-size: 12px; margin-left: 6px; }
+        .time-compare.slow { color: #ef4444; }
+        .time-compare.fast { color: #16a34a; }
+        
+        /* 心情选择 */
+        .mood-selector { display: flex; gap: 10px; margin-top: 15px; }
+        .mood-btn { width: 60px; height: 60px; border: 3px solid #e2e8f0; border-radius: 14px; background: white; font-size: 28px; transition: all 0.3s ease; cursor: pointer; }
+        .mood-btn.active { border-color: #667eea; background: linear-gradient(135deg, #f0f3ff 0%, #e9e7ff 100%); transform: scale(1.1); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2); animation: bounce 0.5s ease; }
+        .mood-btn:active { transform: scale(0.95); }
+        
+        /* 底部按钮 */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 18px; padding-bottom: calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 20px rgba(0,0,0,0.08); display: flex; gap: 12px; border-radius: 20px 20px 0 0; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; transition: all 0.3s ease; cursor: pointer; }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: #475569; border: 2px solid #e2e8f0; }
+        
+        /* 作业选择面板 */
+        .subject-block { margin-bottom: 20px; }
+        .subject-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .option-list { display: flex; flex-direction: column; gap: 8px; }
+        .option-item { display: flex; align-items: center; gap: 10px; padding: 14px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; transition: all 0.3s ease; border: 2px solid transparent; }
+        .option-item:has(input:checked) { border-color: #667eea; background: linear-gradient(135deg, #f0f3ff 0%, #e9e7ff 100%); }
+        .option-item input { width: 22px; height: 22px; accent-color: #667eea; }
+        .option-item label { flex: 1; font-size: 14px; color: #334155; }
+        
+        /* 完成历史 */
+        .history-section { margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0; }
+        .history-title { font-size: 15px; font-weight: bold; margin-bottom: 12px; color: #2c3e50; }
+        .history-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 10px; margin-bottom: 8px; font-size: 13px; transition: all 0.3s ease; }
+        .history-item:active { transform: scale(0.98); }
+        
+        /* Toast */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); color: white; padding: 14px 28px; border-radius: 12px; z-index: 2000; font-size: 14px; animation: slideUp 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .toast-success { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+        .toast-error { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        
+        /* 对话框 - 完全独立于页面结构，使用 fixed 定位到视口 */
+        .dialog-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.2s ease; }
+        .dialog { background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); border-radius: 24px; padding: 24px; width: 90%; max-width: 350px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; box-shadow: 0 10px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); }
+        .dialog-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b; text-align: center; }
+        .form-item { margin-bottom: 20px; }
+        .form-item label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #334155; }
+        .form-item input, .form-item select, .form-item textarea { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; transition: all 0.3s ease; background: white; font-family: inherit; }
+        .form-item input:focus, .form-item select:focus, .form-item textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .dialog-buttons { display: flex; gap: 12px; margin-top: 24px; }
+        
+        /* 设置页面卡片 */
+        .page.settings .stats-card, .page.settings .homework-section { transition: all 0.3s ease; }
+        .page.settings .stats-card:active, .page.settings .homework-section:active { transform: scale(0.98); }
+        
+        /* 报告页面卡片 */
+        .page.report .child-header { margin-bottom: 20px; }
+        .page.report .stats-card { background: linear-gradient(135deg, #fb8c00 0%, #ffb74d 100%); color: white; border: none; }
+        .page.report .stats-card .stats-title { color: white; }
+        
+        /* 隐藏元素 */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 首页 -->
+        <div class="page" :class="{active: currentTab === 'home'}">
+            <!-- 孩子信息 -->
+            <div class="child-header">
+                <div class="child-avatar" @click="editChild">
+                    <img v-if="childAvatar" :src="childAvatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
+                    <span v-else>{{ currentChild ? (currentChild.gender === '男' ? '👦' : '👧') : '👤' }}</span>
+                </div>
+                <div class="child-info">
+                    <div class="child-name">{{ currentChild ? (currentChild.child_name + ' · ' + currentChild.grade) : '点击头像添加孩子信息' }}</div>
+                    <div class="child-detail" v-if="currentChild">{{ currentChild.age }}岁 · {{ currentChild.gender }}</div>
+                    <div style="font-size:12px;opacity:0.9;margin-top:2px;" v-if="currentChild">📊 已坚持 {{ studyDays }} 天</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:3px;">今日心情</div>
+                    <div class="mood-display" @click="showMoodDialog = true" style="cursor:pointer;" title="点击选择心情">{{ getMoodEmoji() }}</div>
+                </div>
+            </div>
+            
+            <!-- 日期显示 -->
+            <div style="text-align:center;padding:10px;background:white;border-radius:10px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;color:#667eea;font-weight:bold;">📅 {{ currentDate }}</div>
+            </div>
+
+            <!-- 今日统计 -->
+            <div class="stats-card">
+                <div class="stats-title">
+                    <span>📊 今日统计</span>
+                    <div style="display:flex;gap:5px;">
+                        <button class="btn btn-secondary" style="padding:5px 10px;font-size:12px;" @click="showHistoryDialog = true">📜</button>
+                        <button class="btn btn-secondary" style="padding:5px 10px;font-size:12px;" @click="showHomeworkSelector = true">➕</button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ totalCount }}</div>
+                        <div class="stat-label">总作业</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color:#67c23a;">{{ doneCount }}</div>
+                        <div class="stat-label">已完成</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color:#e6a23c;">{{ doingCount }}</div>
+                        <div class="stat-label">进行中</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ totalDuration }}</div>
+                        <div class="stat-label">总用时</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 今日作业列表 -->
+            <div class="homework-section">
+                <div class="section-title">📝 今日作业</div>
+                
+                <div class="empty-state" v-if="todayList.length === 0" style="text-align:center;padding:30px;color:#999;">
+                    <div style="font-size:40px;margin-bottom:10px;">📝</div>
+                    <div>点击"选择作业"布置今日作业</div>
+                </div>
+                
+                <div class="homework-list" v-else>
+                    <div class="homework-item" :class="item.status" v-for="item in todayList" :key="item.template_id">
+                        <div class="homework-header">
+                            <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                            <span class="homework-name">{{ item.task_name }}</span>
+                            <span class="homework-status" :class="item.status">{{ item.status==='done'?'✅':'⏳' }}</span>
+                        </div>
+                        <div class="homework-input" v-if="item.status!=='done'">
+                            <!-- 顶部信息行 -->
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <span style="font-size:11px;color:#666;">预期：{{ item.expected_duration }}分钟</span>
+                                <span style="font-size:11px;color:#999;" v-if="getAverageDuration(item.task_name)" title="历史平均用时">平均：{{ getAverageDuration(item.task_name) }}分钟</span>
+                                <span style="font-size:11px;color:#ccc;" v-else title="首次完成该作业后将显示平均时间">平均：--</span>
+                            </div>
+                            <!-- 快捷按钮 + 滑动条 一行 -->
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                                <button @click="setDuration(item, item.expected_duration)" style="padding:4px 8px;font-size:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">预期</button>
+                                <button @click="setDuration(item, getAverageDuration(item.task_name))" v-if="getAverageDuration(item.task_name)" style="padding:4px 8px;font-size:10px;background:#fef3c7;border:1px solid #fde68a;border-radius:4px;color:#92400e;white-space:nowrap;">平均</button>
+                                <button @click="setDuration(item, 15)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">15</button>
+                                <button @click="setDuration(item, 30)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">30</button>
+                                <button @click="setDuration(item, 45)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">45</button>
+                                <button @click="setDuration(item, 60)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">60</button>
+                                <input type="range" v-model="item.duration" :min="1" :max="Math.max(120, item.expected_duration * 2)" step="5" style="flex:1;accent-color:#667eea;height:20px;" @input="syncDuration(item)"/>
+                            </div>
+                            <!-- 输入框 + 提交 一行 -->
+                            <div class="homework-input-row">
+                                <input type="number" v-model="item.duration" placeholder="输入用时 (分钟)" min="1" max="300" style="flex:1;"/>
+                                <button @click="submit(item)" :disabled="!item.duration" style="white-space:nowrap;padding:10px 20px;">提交</button>
+                            </div>
+                        </div>
+                        <div class="homework-result" v-else>
+                            ✅ {{ item.duration }}分钟
+                            <span class="time-compare" :class="getCompareClass(item)">{{ getCompareText(item) }}</span>
+                            <span v-if="item.is_abnormal" style="color:#f56c6c;font-weight:bold;font-size:12px;margin-left:5px;cursor:pointer;" @click="showAbnormalNote(item)" title="点击填写异常理由">⚠️ 异常 (平均{{ item.average_duration }}分钟)</span>
+                            <span v-if="item.abnormal_note" style="color:#999;font-size:11px;margin-left:5px;">📝 {{ item.abnormal_note }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 完成历史 -->
+                    <div class="history-section" v-if="doneCount > 0">
+                        <div class="history-title">📜 完成历史</div>
+                        <div class="history-item" v-for="item in todayList.filter(h => h.status === 'done')" :key="item.template_id" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px;">
+                            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+                                <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                                <span style="flex:1;">{{ item.task_name }}</span>
+                                <span style="font-weight:bold;color:#667eea;display:flex;align-items:center;">{{ item.duration }}分钟</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;width:100%;font-size:11px;color:#999;">
+                                <span>🕐 {{ item.completion_date || currentDate }}</span>
+                                <span v-if="item.expected_duration" style="margin-left:5px;">预期 {{ item.expected_duration }}分钟</span>
+                                <span v-if="item.average_duration" style="margin-left:5px;">平均 {{ item.average_duration }}分钟</span>
+                                <span class="time-compare" :class="getCompareClass(item)">{{ getCompareText(item) }}</span>
+                                <span v-if="item.is_abnormal" style="color:#f56c6c;font-weight:bold;cursor:pointer;" @click="showAbnormalNote(item)" title="点击填写异常理由">⚠️</span>
+                                <span v-if="item.abnormal_note" style="color:#999;" title="异常理由">📝 {{ item.abnormal_note }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" style="width:100%;margin-top:15px;" @click="resetHomework">🔄 重新布置</button>
+                </div>
+            </div>
+        </div>
+        <!-- 首页结束 -->
+        
+        <!-- 报告页面 -->
+        <div class="page" :class="{active: currentTab === 'report'}">
+            <!-- 报告页面内容 -->
+            <div style="margin-bottom:15px;">
+                <div class="child-header" style="padding:20px;">
+                    <div class="child-avatar" style="width:70px;height:70px;font-size:35px;" @click="editChild">
+                        <img v-if="childAvatar" :src="childAvatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
+                        <span v-else>{{ currentChild ? (currentChild.gender === '男' ? '👦' : '👧') : '👤' }}</span>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:20px;font-weight:bold;margin-bottom:5px;">{{ currentChild ? currentChild.child_name : '点击添加孩子信息' }}</div>
+                        <div style="font-size:13px;opacity:0.9;">{{ currentChild ? currentChild.grade : '' }} {{ currentChild ? '· ' + currentChild.age + '岁' : '' }}</div>
+                        <div style="font-size:11px;opacity:0.8;margin-top:5px;">📊 已坚持 {{ studyDays }} 天</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 本周摘要 -->
+            <div style="background:linear-gradient(135deg, #fb8c00 0%, #ffb74d 100%);color:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 4px 12px rgba(251,140,0,0.3);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:12px;">📈 本周学习摘要</div>
+                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;">
+                    <div>
+                        <div style="font-size:22px;font-weight:bold;">{{ weekStats.homework }}</div>
+                        <div style="font-size:10px;opacity:0.9;">总作业</div>
+                    </div>
+                    <div>
+                        <div style="font-size:22px;font-weight:bold;">{{ weekStats.duration }}</div>
+                        <div style="font-size:10px;opacity:0.9;">总分钟</div>
+                    </div>
+                    <div>
+                        <div style="font-size:22px;font-weight:bold;">{{ weekStats.days }}</div>
+                        <div style="font-size:10px;opacity:0.9;">学习天</div>
+                    </div>
+                    <div>
+                        <div style="font-size:22px;font-weight:bold;">{{ weekStats.avgDailyDuration }}</div>
+                        <div style="font-size:10px;opacity:0.9;">日均分钟</div>
+                    </div>
+                    <div>
+                        <div style="font-size:22px;font-weight:bold;">{{ weekStats.avgDailyHomework }}</div>
+                        <div style="font-size:10px;opacity:0.9;">日均作业</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 7 天趋势 -->
+            <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:15px;">📊 7 天学习趋势</div>
+                <div style="height:250px;">
+                    <canvas id="reportChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 作业数量饼图 -->
+            <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
+                    <span>🏆 作业数量分布</span>
+                    <span style="font-size:13px;color:#667eea;">总作业: <strong>{{ subjectHomeworkRank.reduce((sum,item)=>sum+item.count, 0) }}</strong> 项</span>
+                </div>
+                <div style="height:280px;display:flex;align-items:center;justify-content:center;max-width:320px;margin:0 auto;">
+                    <canvas id="homeworkPieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 学习时长饼图 -->
+            <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
+                    <span>⏱️ 学习时长分布</span>
+                    <span style="font-size:13px;color:#667eea;">总时长: <strong>{{ subjectDurationRank.reduce((sum,item)=>sum+item.duration, 0) }}</strong> 分钟</span>
+                </div>
+                <div style="height:280px;display:flex;align-items:center;justify-content:center;max-width:320px;margin:0 auto;">
+                    <canvas id="durationPieChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 学科分布 -->
+            <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:15px;">📚 学科分布</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+                    <div v-for="subject in subjectList" :key="subject.key" style="padding:15px;border-radius:10px;text-align:center;" :style="{background: subject.color + '20'}">
+                        <div style="font-size:20px;font-weight:bold;" :style="{color: subject.color}">{{ subjectStats[subject.key] || 0 }}</div>
+                        <div style="font-size:11px;color:#666;">{{ subject.name }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 报告页面结束 -->
+        
+        <!-- 设置页面 -->
+        <div class="page" :class="{active: currentTab === 'settings'}">
+            <div style="margin-bottom:15px;">
+                <div style="font-size:20px;font-weight:bold;color:#333;margin-bottom:15px;">⚙️ 系统设置</div>
+            </div>
+            
+            <!-- 科目配置 -->
+            <div style="background:white;border-radius:15px;padding:25px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:16px;font-weight:bold;margin-bottom:20px;color:#667eea;display:flex;justify-content:space-between;align-items:center;">
+                    <span>📚 科目作业配置</span>
+                    <button class="btn btn-primary" @click="showAddSubjectDialog = true" style="padding:6px 16px;font-size:13px;border-radius:20px;">+ 添加科目</button>
+                </div>
+                <div v-for="subject in subjectList" :key="subject.key" style="margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:15px;font-weight:bold;">{{ subject.icon }} {{ subject.name }}</span>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" @click="editSubject(subject.key)" style="padding:6px 16px;font-size:13px;border-radius:20px;">✏️ 编辑</button>
+                            <button v-if="!subject.system" class="btn btn-secondary" @click="deleteSubject(subject.key)" style="padding:6px 12px;font-size:13px;border-radius:20px;color:#f56c6c;border-color:#f56c6c;">🗑️</button>
+                        </div>
+                    </div>
+                    <div style="font-size:13px;color:#666;line-height:1.8;">{{ getSubjectSummary(subject.key) }}</div>
+                </div>
+            </div>
+            
+            <!-- 孩子信息 -->
+            <div style="background:white;border-radius:15px;padding:25px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:16px;font-weight:bold;margin-bottom:20px;color:#667eea;">👤 孩子信息</div>
+                <div style="font-size:14px;color:#666;margin-bottom:12px;line-height:1.8;" v-if="currentChild">
+                    {{ currentChild.child_name }} · {{ currentChild.grade }} · {{ currentChild.gender }} · {{ currentChild.age }}岁
+                </div>
+                <div style="font-size:14px;color:#999;margin-bottom:15px;line-height:1.8;" v-else>未设置</div>
+                <button class="btn btn-primary" @click="editChild" style="width:100%;font-size:14px;padding:12px;">✏️ 编辑孩子信息</button>
+            </div>
+            
+            <!-- 数据管理 -->
+            <div style="background:white;border-radius:15px;padding:25px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:16px;font-weight:bold;margin-bottom:20px;color:#667eea;">💾 数据管理</div>
+                <div style="display:flex;gap:12px;margin-bottom:12px;">
+                    <button class="btn btn-secondary" @click="exportData" style="flex:1;font-size:14px;padding:12px;">📥 备份数据</button>
+                    <button class="btn btn-secondary" @click="showDataDialog = true" style="flex:1;font-size:14px;padding:12px;">📂 恢复数据</button>
+                </div>
+                <button class="btn btn-secondary" @click="exportExcel" style="width:100%;font-size:14px;padding:12px;margin-bottom:12px;">📊 导出 Excel</button>
+                <button class="btn btn-secondary" @click="showResetConfirm('all')" style="width:100%;font-size:14px;padding:12px;">🔄 重置全部</button>
+            </div>
+
+            <!-- 使用说明 -->
+            <div style="background:white;border-radius:15px;padding:25px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:16px;font-weight:bold;margin-bottom:20px;color:#667eea;">📖 使用说明</div>
+                <button class="btn btn-secondary" @click="showHelpDialog = true" style="width:100%;font-size:14px;padding:12px;">📋 查看完整使用文档</button>
+            </div>
+        </div>
+        <!-- 设置页面结束 -->
+        
+        <!-- 全局对话框 - 独立于所有页面，不会被display:none隐藏 -->
+        <!-- 心情选择对话框 -->
+        <div class="dialog-overlay" v-if="showMoodDialog">
+            <div class="dialog">
+                <div class="dialog-title">😊 今日心情</div>
+                <div style="display:flex;justify-content:space-around;gap:10px;">
+                    <button class="mood-btn" :class="{active: childMood === 'happy'}" @click="childMood = 'happy'; saveMood(); showMoodDialog = false" style="flex:1;height:60px;font-size:28px;" title="开心">😃</button>
+                    <button class="mood-btn" :class="{active: childMood === 'normal'}" @click="childMood = 'normal'; saveMood(); showMoodDialog = false" style="flex:1;height:60px;font-size:28px;" title="一般">😐</button>
+                    <button class="mood-btn" :class="{active: childMood === 'sad'}" @click="childMood = 'sad'; saveMood(); showMoodDialog = false" style="flex:1;height:60px;font-size:28px;" title="低落">😔</button>
+                    <button class="mood-btn" :class="{active: childMood === 'angry'}" @click="childMood = 'angry'; saveMood(); showMoodDialog = false" style="flex:1;height:60px;font-size:28px;" title="烦躁">😤</button>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showMoodDialog = false" style="width:100%;">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录面板 -->
+        <div class="dialog-overlay" v-if="showHistoryDialog" @click="showHistoryDialog = false">
+            <div class="dialog" style="max-width:400px;max-height:80vh;overflow-y:auto;" @click.stop>
+                <div class="dialog-title">📜 完成历史</div>
+                
+                <div v-if="historyList.length === 0" style="text-align:center;padding:30px;color:#999;">
+                    <div style="font-size:40px;margin-bottom:10px;">📝</div>
+                    <div>暂无历史记录</div>
+                </div>
+                
+                <div v-else>
+                    <div v-for="(day, index) in historyList" :key="index" style="margin-bottom:20px;">
+                        <div style="font-size:14px;font-weight:bold;color:#667eea;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e9ecef;">
+                            {{ day.date }}
+                        </div>
+                        <div v-for="item in day.items" :key="item.template_id" style="display:flex;align-items:center;gap:8px;padding:8px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;font-size:13px;">
+                            <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                            <span style="flex:1;">{{ item.task_name }}</span>
+                            <span style="font-weight:bold;color:#667eea;">{{ item.duration }}分钟</span>
+                            <span v-if="item.expected_duration" :class="getCompareClass(item)" style="font-size:11px;">{{ getCompareText(item) }}</span>
+                            <span v-if="item.is_abnormal" style="font-size:11px;color:#f56c6c;font-weight:bold;" title="异常">⚠️</span>
+                            <span v-if="item.abnormal_note" style="font-size:11px;color:#999;" title="异常理由">📝</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showHistoryDialog = false" style="width:100%;">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 作业选择面板 -->
+        <div class="dialog-overlay" v-if="showHomeworkSelector">
+            <div class="dialog">
+                <div class="dialog-title">📋 选择今日作业</div>
+                
+                <div class="subject-block" v-for="subject in subjectList" :key="subject.key">
+                    <div class="subject-title">{{ subject.icon }} {{ subject.name }}</div>
+                    <div class="option-list">
+                        <div class="option-item" v-for="item in homeworkList.filter(h => h.subject_name === subject.name)" :key="item.template_id">
+                            <input type="checkbox" :id="'hw-'+subject.key+'-'+item.template_id" v-model="item.selected"/>
+                            <label :for="'hw-'+subject.key+'-'+item.template_id">{{ item.task_name }} ({{ item.expected_duration }}分钟)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showHomeworkSelector = false">取消</button>
+                    <button class="btn btn-primary" @click="assignHomework">布置作业</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 孩子信息对话框 -->
+        <div class="dialog-overlay" v-if="showChildDialog">
+            <div class="dialog">
+                <div class="dialog-title">👤 孩子信息</div>
+                
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div @click="triggerAvatarUpload" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;margin:0 auto 10px;" title="点击上传头像">
+                        <img v-if="childAvatar" :src="childAvatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
+                        <span v-else style="color:white;">{{ childForm.gender === '男' ? '👦' : '👧' }}</span>
+                    </div>
+                    <div style="font-size:12px;color:#999;">点击头像上传</div>
+                </div>
+                
+                <div class="form-item">
+                    <label>姓名</label>
+                    <input v-model="childForm.child_name"/>
+                </div>
+                <div class="form-item">
+                    <label>出生日期</label>
+                    <input type="date" v-model="childForm.birthdate" @change="calculateAgeAndGrade"/>
+                </div>
+                <div class="form-item">
+                    <label>年龄 (自动计算)</label>
+                    <input type="number" v-model="childForm.age" min="3" max="18" disabled style="background:#f5f5f5;"/>
+                </div>
+                <div class="form-item">
+                    <label>年级 (自动计算，可手动调整)</label>
+                    <select v-model="childForm.grade">
+                        <option value="">选择年级</option>
+                        <option value="一年级">一年级</option>
+                        <option value="二年级">二年级</option>
+                        <option value="三年级">三年级</option>
+                        <option value="四年级">四年级</option>
+                        <option value="五年级">五年级</option>
+                        <option value="六年级">六年级</option>
+                        <option value="初一">初一</option>
+                        <option value="初二">初二</option>
+                        <option value="初三">初三</option>
+                        <option value="高一">高一</option>
+                        <option value="高二">高二</option>
+                        <option value="高三">高三</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>性别</label>
+                    <div style="display:flex;gap:20px;">
+                        <label style="font-weight:normal;display:flex;align-items:center;gap:5px;">
+                            <input type="radio" v-model="childForm.gender" value="男" style="width:auto;"/> 男孩
+                        </label>
+                        <label style="font-weight:normal;display:flex;align-items:center;gap:5px;">
+                            <input type="radio" v-model="childForm.gender" value="女" style="width:auto;"/> 女孩
+                        </label>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showChildDialog = false">取消</button>
+                    <button class="btn btn-primary" @click="createChild">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 异常备注对话框 -->
+        <div class="dialog-overlay" v-if="showAbnormalNoteDialog">
+            <div class="dialog">
+                <div class="dialog-title">⚠️ 异常完成时间备注</div>
+                <div style="padding:12px;background:#fff3e0;border-radius:8px;margin-bottom:15px;font-size:13px;">
+                    <div style="margin-bottom:6px;"><strong>作业：</strong>{{ currentEditItem?.task_name }}</div>
+                    <div style="margin-bottom:6px;"><strong>本次用时：</strong><span style="color:#f56c6c;font-weight:bold;">{{ currentEditItem?.duration }}分钟</span></div>
+                    <div><strong>历史平均：</strong><span style="color:#67c23a;font-weight:bold;">{{ currentEditItem?.average_duration }}分钟</span></div>
+                </div>
+                <div class="form-item">
+                    <label>异常理由（可选）</label>
+                    <textarea v-model="abnormalNoteForm" placeholder="例如：孩子今天不舒服/题目太难..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;min-height:60px;font-family:inherit;font-size:13px;"></textarea>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showAbnormalNoteDialog = false">取消</button>
+                    <button class="btn btn-primary" @click="saveAbnormalNote" style="flex:1;">保存备注</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 重置确认对话框 -->
+        <div class="dialog-overlay" v-if="showResetDialog" @click="showResetDialog = false">
+            <div class="dialog" @click.stop>
+                <div class="dialog-title" style="color:#f56c6c;">⚠️ 确认重置</div>
+                <div style="padding:15px;background:#fff3e0;border-radius:8px;margin-bottom:15px;font-size:13px;">
+                    <div v-if="resetType === 'history'">
+                        <strong>📜 清空历史记录</strong><br/>
+                        这将删除所有历史完成记录，但保留当天作业。<br/>
+                        <span style="color:#f56c6c;">此操作不可恢复！</span>
+                    </div>
+                    <div v-if="resetType === 'today'">
+                        <strong>📝 清空当天作业</strong><br/>
+                        这将删除今天的作业列表，但保留历史记录。<br/>
+                        <span style="color:#f56c6c;">此操作不可恢复！</span>
+                    </div>
+                    <div v-if="resetType === 'all'">
+                        <strong>🔄 重置全部数据</strong><br/>
+                        这将删除所有数据（历史记录 + 当天作业），孩子信息和心情会保留。<br/>
+                        <span style="color:#f56c6c;">此操作不可恢复！</span>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showResetDialog = false" style="flex:1;">取消</button>
+                    <button class="btn" :style="{background:'#f56c6c',color:'white',flex:1}" @click="confirmReset">确认重置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计图表对话框 -->
+        <div class="dialog-overlay" v-if="showStatsDialog" @click="showStatsDialog = false">
+            <div class="dialog" style="max-width:500px;max-height:85vh;overflow-y:auto;" @click.stop>
+                <div class="dialog-title">📊 最近 7 天统计</div>
+                
+                <div style="margin-bottom:15px;">
+                    <canvas id="statsChart" height="250"></canvas>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
+                    <div style="padding:12px;background:#e3f2fd;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#666;">7 天总作业</div>
+                        <div style="font-size:20px;font-weight:bold;color:#1e88e5;">{{ statsSummary.totalHomework }} 项</div>
+                    </div>
+                    <div style="padding:12px;background:#e8f5e9;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#666;">7 天总用时</div>
+                        <div style="font-size:20px;font-weight:bold;color:#43a047;">{{ statsSummary.totalDuration }} 分钟</div>
+                    </div>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+                    <div style="padding:12px;background:#fff3e0;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#666;">日均作业</div>
+                        <div style="font-size:20px;font-weight:bold;color:#fb8c00;">{{ statsSummary.avgHomework }} 项</div>
+                    </div>
+                    <div style="padding:12px;background:#fce4ec;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#666;">日均用时</div>
+                        <div style="font-size:20px;font-weight:bold;color:#e91e63;">{{ statsSummary.avgDuration }} 分钟</div>
+                    </div>
+                </div>
+                
+                <div class="dialog-buttons" style="margin-top:20px;">
+                    <button class="btn btn-secondary" @click="showStatsDialog = false" style="width:100%;">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 科目编辑对话框 -->
+        <div class="dialog-overlay" v-if="showSubjectEditDialog" @click="showSubjectEditDialog = false">
+            <div class="dialog" style="max-width:400px;max-height:85vh;overflow-y:auto;" @click.stop>
+                <div class="dialog-title">✏️ 编辑{{ currentEditSubjectName }}作业</div>
+                
+                <div style="margin-bottom:15px;">
+                    <div style="display:grid;grid-template-columns:1fr 65px 40px;gap:6px;margin-bottom:10px;font-size:12px;font-weight:bold;color:#666;">
+                        <div>作业名称</div>
+                        <div style="text-align:center;">预计时间</div>
+                        <div></div>
+                    </div>
+                    <div v-for="(task, index) in currentSubjectTasks" :key="index" style="display:grid;grid-template-columns:1fr 65px 40px;gap:6px;margin-bottom:8px;">
+                        <input type="text" v-model="task.name" placeholder="作业名称" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;min-width:0;"/>
+                        <input type="number" v-model="task.duration" placeholder="分钟" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;width:100%;"/>
+                        <button @click="removeTask(index)" style="padding:8px;background:#f56c6c;color:white;border:none;border-radius:6px;cursor:pointer;">🗑️</button>
+                    </div>
+                    <button @click="addTask()" style="width:100%;padding:10px;background:#f8f9fa;color:#666;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px;">+ 添加作业</button>
+                </div>
+                
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showSubjectEditDialog = false" style="flex:1;">取消</button>
+                    <button class="btn btn-primary" @click="saveSubjectSettings" style="flex:1;">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加科目对话框 -->
+        <div class="dialog-overlay" v-if="showAddSubjectDialog">
+            <div class="dialog">
+                <div class="dialog-title">➕ 添加新科目</div>
+                <div class="form-item">
+                    <label>科目名称</label>
+                    <input v-model="newSubjectForm.name" placeholder="例如：物理、化学"/>
+                </div>
+                <div class="form-item">
+                    <label>图标 (Emoji)</label>
+                    <input v-model="newSubjectForm.icon" placeholder="例如：🔬、⚗️"/>
+                </div>
+                <div class="form-item">
+                    <label>主题颜色</label>
+                    <input type="color" v-model="newSubjectForm.color" style="height:50px;padding:2px;"/>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showAddSubjectDialog = false">取消</button>
+                    <button class="btn btn-primary" @click="saveNewSubject">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据管理对话框 -->
+        <div class="dialog-overlay" v-if="showDataDialog" @click="showDataDialog = false">
+            <div class="dialog" @click.stop>
+                <div class="dialog-title">💾 数据备份与恢复</div>
+                <input type="file" ref="importFileInput" accept="*/*" style="display:none;" @change="importData"/>
+                
+                <div style="margin-bottom:15px;">
+                    <div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#667eea;">📤 导出数据</div>
+                    <button class="btn btn-primary" @click="exportData" style="width:100%;font-size:13px;">📥 下载备份文件</button>
+                </div>
+                
+                <div style="margin-bottom:15px;padding-top:15px;border-top:2px solid #e9ecef;">
+                    <div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#67c23a;">📥 导入数据</div>
+                    <button class="btn btn-secondary" @click="$refs.importFileInput.click()" style="width:100%;font-size:13px;">📂 选择备份文件</button>
+                </div>
+                
+
+                
+                <div style="margin-bottom:15px;padding-top:15px;border-top:2px solid #e9ecef;">
+                    <div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#f56c6c;">🗑️ 重置数据</div>
+                    <div style="display:flex;gap:8px;margin-bottom:8px;">
+                        <button class="btn btn-secondary" @click="showResetConfirm('history')" style="flex:1;font-size:12px;">📜 清空历史</button>
+                        <button class="btn btn-secondary" @click="showResetConfirm('today')" style="flex:1;font-size:12px;">📝 清空当天</button>
+                    </div>
+                    <button class="btn btn-secondary" @click="showResetConfirm('all')" style="width:100%;font-size:12px;">🔄 重置全部</button>
+                </div>
+                
+                <div style="padding:10px;background:#fff3cd;border-radius:6px;font-size:11px;color:#856404;margin-bottom:15px;">
+                    ⚠️ 导入会覆盖当前数据，重置会删除数据，请谨慎！
+                </div>
+                
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showDataDialog = false" style="width:100%;">关闭</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用说明对话框 -->
+        <div class="dialog-overlay" v-if="showHelpDialog" @click="showHelpDialog = false">
+            <div class="dialog" style="max-width:450px;max-height:85vh;overflow-y:auto;" @click.stop>
+                <div class="dialog-title">📖 使用说明</div>
+                <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
+                    <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e2e8f0;">
+                        <div style="font-weight:bold;color:#667eea;font-size:16px;margin-bottom:5px;">📚 学习进度监督 - 完整使用文档</div>
+                        <div style="color:#64748b;font-size:12px;">版本：v2.0 | 最后更新：2026年3月</div>
+                    </div>
+
+                    <!-- 快速入门 -->
+                    <div style="margin-bottom:20px;padding:15px;background:linear-gradient(135deg, #667eea15 0%, #764ba215 100%);border-radius:10px;border-left:4px solid #667eea;">
+                        <div style="font-weight:bold;color:#667eea;margin-bottom:10px;font-size:14px;">🚀 快速入门</div>
+                        <ol style="margin-left:20px;">
+                            <li style="margin-bottom:5px;">点击「设置」→「✏️ 编辑孩子信息」，填写孩子出生日期、姓名、性别，系统会自动计算年龄和年级（可手动调整）</li>
+                            <li style="margin-bottom:5px;">（可选）进入科目配置，添加/编辑需要的科目和对应作业模板</li>
+                            <li style="margin-bottom:5px;">回到首页，点击右上角「+」按钮，勾选今日要完成的作业，点击「布置作业」</li>
+                            <li style="margin-bottom:5px;">孩子完成每一项作业后，在对应输入框填写实际用时，点击「提交」</li>
+                            <li>切换到「报告」页面，查看详细的学习统计、趋势分析和科目排行</li>
+                        </ol>
+                    </div>
+
+                    <!-- 核心功能详解 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f8fafc;border-radius:10px;border-left:4px solid #94a3b8;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">🏠 核心功能详解</div>
+                        
+                        <div style="margin-bottom:10px;"><strong>【首页功能】</strong></div>
+                        <ul style="margin-left:15px;margin-bottom:15px;">
+                            <li><strong>孩子信息头</strong>：显示孩子姓名、年级、实时年龄、累计学习天数，点击头像可快速编辑信息</li>
+                            <li><strong>今日心情记录</strong>：点击右侧表情图标选择当日心情，长期记录可观察学习状态波动</li>
+                            <li><strong>实时统计面板</strong>：实时更新总作业数、已完成/进行中数量、累计学习时长</li>
+                            <li><strong>作业列表</strong>：显示当日布置的所有作业，输入用时提交即可，异常用时会自动提示填写备注</li>
+                            <li><strong>当日完成历史</strong>：展示当天所有已完成作业的详细信息，包含用时对比、异常标记等</li>
+                        </ul>
+
+                        <div style="margin-bottom:10px;"><strong>【作业管理】</strong></div>
+                        <ul style="margin-left:15px;margin-bottom:15px;">
+                            <li><strong>自定义作业模板</strong>：每个科目可自定义作业名称和预计完成时间，支持无限添加</li>
+                            <li><strong>批量布置作业</strong>：一键勾选当天需要完成的作业，快速布置</li>
+                            <li><strong>异常检测机制</strong>：提交作业时自动对比历史平均用时，偏离30%以上提示填写异常理由</li>
+                            <li><strong>全局历史查询</strong>：支持查看所有历史完成记录，按日期分类展示</li>
+                        </ul>
+
+                        <div style="margin-bottom:10px;"><strong>【报告分析】</strong></div>
+                        <ul style="margin-left:15px;margin-bottom:15px;">
+                            <li><strong>本周学习摘要</strong>：统计近7天总作业量、总学习时长、有效学习天数、日均分钟、日均作业数等核心指标</li>
+                            <li><strong>7天学习趋势图</strong>：双柱状图直观展示每日作业数量和学习时长变化趋势，支持hover查看详细数值</li>
+                            <li><strong>作业数量占比甜甜圈图</strong>：直观展示各科目作业数量占总作业量的百分比，右上角显示总作业数，图例自动按2个一行排列，显示科目名称、数量和占比</li>
+                            <li><strong>学习时长占比甜甜圈图</strong>：直观展示各科目学习时长占总时长的百分比，右上角显示总学习时长，图例自动按2个一行排列，显示科目名称、时长和占比</li>
+                            <li><strong>学科分布</strong>：卡片式展示各科目作业总数量，颜色和科目自定义主题色统一，新增科目自动加入显示</li>
+                        </ul>
+
+                        <div style="margin-bottom:10px;"><strong>【设置中心】</strong></div>
+                        <ul style="margin-left:15px;">
+                            <li><strong>自定义科目</strong>：支持无限添加科目，可自定义名称、Emoji图标、主题颜色，不需要的科目可删除，自动适配所有功能页面</li>
+                            <li><strong>作业模板配置</strong>：每个科目单独配置作业名称和预计完成时间，修改后即时生效</li>
+                            <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）</li>
+                            <li><strong>数据安全</strong>：支持一键备份/恢复数据、导出Excel统计报表，多种重置选项满足不同需求</li>
+                        </ul>
+                    </div>
+
+                    <!-- 核心算法说明 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#eff6ff;border-radius:10px;border-left:4px solid #3b82f6;">
+                        <div style="font-weight:bold;color:#1e40af;margin-bottom:10px;font-size:14px;">⚙️ 核心算法说明</div>
+                        
+                        <div style="margin-bottom:10px;"><strong>1. 年龄自动计算算法</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;font-size:13px;">
+                            计算公式：当前年份 - 出生年份 - (当前月份 &lt; 出生月份 || (当前月份 == 出生月份 &amp;&amp; 当前日期 &lt; 出生日期) ? 1 : 0)<br>
+                            特性：自动考虑生日是否已过，每年生日当天自动增长年龄，无需手动更新
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>2. 年级自动匹配算法</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;font-size:13px;">
+                            匹配规则（国内标准入学年龄）：<br>
+                            3 岁→小班 / 4 岁→中班 / 5 岁→大班 / 6 岁→一年级 / 7 岁→二年级 / 8 岁→三年级 / 9 岁→四年级 / 10 岁→五年级 / 11 岁→六年级 / 12 岁→初一 / 13 岁→初二 / 14 岁→初三 / 15 岁→高一 / 16 岁→高二 / 17 岁→高三<br>
+                            特性：支持手动调整，手动调整后优先级高于自动计算结果
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>3. 异常用时检测算法</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;font-size:13px;">
+                            判断逻辑：|当前用时 - 历史平均用时 | / 历史平均用时 &gt; 0.3（偏离 30% 以上判定为异常）<br>
+                            特性：仅在该作业有至少 1 次历史完成记录时触发，首次完成不检测，异常结果可填写备注说明原因
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>4. 统计排名算法</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;font-size:13px;">
+                            统计范围：所有历史完成记录，按科目维度聚合<br>
+                            排名规则：作业数量/学习时长从高到低排序，进度条按当前最大值的百分比计算<br>
+                            特性：新增科目自动加入统计，无完成记录显示为 0
+                        </p>
+                    </div>
+
+                    <!-- 高级功能 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#f0fdf4;border-radius:10px;border-left:4px solid #22c55e;">
+                        <div style="font-weight:bold;color:#166534;margin-bottom:10px;font-size:14px;">✨ 高级功能使用指南</div>
+                        
+                        <div style="margin-bottom:10px;"><strong>【年龄与年级自动计算】</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;">
+                            功能特性：<br>
+                            • 输入孩子出生日期后，系统自动计算实岁，生日当天自动增长年龄，无需手动更新<br>
+                            • 自动按照国内标准入学年龄匹配对应年级，3岁小班到17岁高三全覆盖<br>
+                            • 支持手动调整年级，适配上学早/晚、跳级、留级等特殊情况，手动调整后优先级最高
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>【自定义科目管理】</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;">
+                            功能特性：<br>
+                            • 支持无限添加科目，满足小学/初中/高中全阶段需求<br>
+                            • 每个科目可自定义名称、专属Emoji图标、主题颜色，完全个性化<br>
+                            • 新增科目自动同步到作业选择、报告统计、学科分布等所有页面，无需额外配置<br>
+                            • 不需要的科目可删除，历史记录不受影响
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>【Excel统计导出】</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;">
+                            导出内容：包含4个结构化工作表<br>
+                            • 基本信息表：孩子姓名、年级、年龄、累计学习天数等基础信息<br>
+                            • 每日汇总表：按日期统计每天的作业数量和总学习时长，选中数据可一键生成学习趋势柱状图<br>
+                            • 科目统计表：各科目总作业数量、总学习时长、平均单次时长，可生成科目占比饼图/柱状图<br>
+                            • 作业明细表：所有历史作业的完整记录，包含科目、作业名称、用时、预计用时、异常标记、备注等全部信息<br>
+                            操作：点击设置→「📊 导出学习统计（Excel）」即可，文件自动保存到下载目录，文件名按「孩子姓名_学习统计_日期」自动命名
+                        </p>
+
+                        <div style="margin-bottom:10px;"><strong>【快捷时间输入】</strong></div>
+                        <p style="margin-left:12px;margin-bottom:10px;">
+                            功能特性：<br>
+                            • 滑动条快速调节：拖动滑块快速设置用时，步长 5 分钟，方便微调<br>
+                            • 快捷按钮一键设置：点击「预期」快速填入预期时间，点击「平均」快速填入历史平均用时<br>
+                            • 常用时间按钮：15/30/45/60 分钟常用时间一键选择，无需手动输入<br>
+                            • 数字输入框：支持直接输入精确数值，与滑动条实时同步<br>
+                            使用技巧：优先点击「平均」或「预期」按钮，然后直接点提交，最快 2 步完成作业提交
+                        </p>
+                    </div>
+
+                    <!-- 常见问题 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#fffbeb;border-radius:10px;border-left:4px solid #f59e0b;">
+                        <div style="font-weight:bold;color:#854d0e;margin-bottom:10px;font-size:14px;">❓ 常见问题</div>
+                        <ul style="margin-left:15px;">
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：年龄和年级为什么和实际不符？</strong><br>
+                                A：系统默认按国内标准入学年龄计算，如果上学时间特殊，可以在编辑孩子信息时手动选择实际年级，手动选择后优先级最高，不会被自动计算覆盖。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：删除科目会丢失历史数据吗？</strong><br>
+                                A：不会。删除科目只会删除该科目的作业模板，已经完成的历史记录会保留，报告统计里也会显示该科目的历史数据。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：导出的Excel文件在哪里？</strong><br>
+                                A：安卓手机保存在「内部存储→Download」目录，苹果手机保存在浏览器下载目录，文件名格式为「孩子姓名_学习统计_日期.xlsx」。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：为什么有些作业提交时不提示异常？</strong><br>
+                                A：异常检测需要该作业至少有1次历史完成记录，首次完成时没有参考数据，不会触发异常提示。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：备份的文件在手机哪里找？</strong><br>
+                                A：安卓手机保存在「内部存储→Download」目录，苹果手机会直接下载到浏览器的下载目录，文件名格式为「学习进度备份_日期.json」。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：换手机了怎么转移数据？</strong><br>
+                                A：旧手机点击备份数据，把备份文件通过微信/QQ/蓝牙发送到新手机，新手机点击恢复数据选择该文件即可，所有数据会完整恢复。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：新增的科目为什么在作业选择里看不到？</strong><br>
+                                A：新增科目后会自动生成默认作业模板（练习、试卷），如果没看到可以进入科目编辑检查是否有作业，至少需要一个作业才会出现在选择列表里。
+                            </li>
+                            <li style="margin-bottom:8px;">
+                                <strong>Q：如何快速输入作业用时？</strong><br>
+                                A：有三种快捷方式：①点击「预期」或「平均」按钮一键填入 ②点击 15/30/45/60 常用时间按钮 ③拖动滑动条快速调节。最快 2 步完成提交。
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 温馨提示 -->
+                    <div style="margin-bottom:20px;padding:15px;background:#eff6ff;border-radius:10px;border-left:4px solid #3b82f6;">
+                        <div style="font-weight:bold;color:#1e40af;margin-bottom:10px;font-size:14px;">💡 温馨提示</div>
+                        <ul style="margin-left:15px;">
+                            <li>所有数据完全保存在本地，不会上传到任何服务器，隐私安全有保障</li>
+                            <li>卸载应用或清除浏览器缓存会丢失所有数据，建议每月至少备份一次</li>
+                            <li>头像会自动压缩到200px宽度，不会占用太多存储空间，最大支持5MB图片</li>
+                            <li>异常记录长期保存，可以定期查看异常备注，及时发现孩子学习中的问题（比如某科目突然用时变长可能是知识点没掌握）</li>
+                            <li>建议每周查看一次报告页面，根据学习情况调整作业量和科目侧重，制定更科学的学习计划</li>
+                        </ul>
+                    </div>
+
+                    <!-- 关于作者 -->
+                    <div style="padding:15px;background:#f8fafc;border-radius:10px;border-left:4px solid #94a3b8;">
+                        <div style="font-weight:bold;color:#334155;margin-bottom:10px;font-size:14px;">👨‍💻 关于作者</div>
+                        <div style="margin-left:12px;line-height:2.2;font-size:13px;">
+                            <strong>开发者：</strong>累累<br/>
+                            <strong>邮箱：</strong><a href="mailto:823921@qq.com" style="color:#667eea;text-decoration:none;">823921@qq.com</a><br/>
+                            <strong>开源地址：</strong><a href="https://github.com/tomatolei/StudyTracker-Mobile" target="_blank" style="color:#667eea;text-decoration:none;">https://github.com/tomatolei/StudyTracker-Mobile</a>
+                        </div>
+                        <div style="text-align:center;margin-top:15px;color:#94a3b8;font-size:11px;">
+                            © 2026 学习进度监督 | 纯本地离线应用 | 开源免费
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-buttons">
+                    <button class="btn btn-secondary" @click="showHelpDialog = false" style="width:100%;">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" :class="{active: currentTab === 'report'}" @click="currentTab = 'report'">
+                <div class="nav-icon">📊</div>
+                <div>报告</div>
+            </div>
+            <div class="nav-item" :class="{active: currentTab === 'home'}" @click="currentTab = 'home'">
+                <div class="nav-icon">🏠</div>
+                <div>首页</div>
+            </div>
+            <div class="nav-item" :class="{active: currentTab === 'settings'}" @click="currentTab = 'settings'">
+                <div class="nav-icon">⚙️</div>
+                <div>设置</div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" v-if="toastMsg" :class="toastClass">{{ toastMsg }}</div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const API_BASE = 'http://localhost:8000/api';
+
+        createApp({
+            setup() {
+                const homeworkList = ref([]);
+                const todayList = ref([]);
+                const currentChild = ref(null);
+                const childMood = ref('normal');
+                const childAvatar = ref('');
+                const showHomeworkSelector = ref(false);
+                const showChildDialog = ref(false);
+                const showMoodDialog = ref(false);
+                const showHistoryDialog = ref(false);
+                const historyList = ref([]);
+                const toastMsg = ref('');
+                const toastClass = ref('toast-success');
+                const childForm = ref({ child_name: '', age: 10, grade: '', gender: '男', birthdate: '' });
+                const showAbnormalNoteDialog = ref(false);
+                const abnormalNoteForm = ref('');
+                const currentEditItem = ref(null);
+                const showDataDialog = ref(false);
+                const showHelpDialog = ref(false);
+                const showResetDialog = ref(false);
+                const resetType = ref('');
+                const showSubjectEditDialog = ref(false);
+                const showStatsDialog = ref(false);
+                const currentEditSubject = ref('');
+                const currentEditSubjectName = ref('');
+                const currentSubjectTasks = ref([]);
+                const statsSummary = ref({ totalHomework: 0, totalDuration: 0, avgHomework: 0, avgDuration: 0 });
+                let statsChartInstance = null;
+                let reportChartInstance = null;
+                const currentTab = ref('home');
+                const showAddSubjectDialog = ref(false);
+                const newSubjectForm = ref({ name: '', icon: '📚', color: '#667eea' });
+                let homeworkPieInstance = null;
+                let durationPieInstance = null;
+                
+                // 科目列表（包含系统和自定义）
+                const subjectList = ref([]);
+                const loadSubjectList = () => {
+                    const defaultSubjects = [
+                        { key: 'yuwen', name: '语文', icon: '📖', color: '#e53935', system: true },
+                        { key: 'shuxue', name: '数学', icon: '📐', color: '#1e88e5', system: true },
+                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true }
+                    ];
+                    const savedCustomSubjects = localStorage.getItem('customSubjects');
+                    let customSubjects = [];
+                    if (savedCustomSubjects) {
+                        try {
+                            customSubjects = JSON.parse(savedCustomSubjects);
+                        } catch (e) {
+                            console.error('自定义科目加载失败', e);
+                        }
+                    }
+                    subjectList.value = [...defaultSubjects, ...customSubjects];
+                };
+                loadSubjectList();
+                
+                // 科目作业配置（默认）
+                const subjectConfig = ref({
+                    yuwen: [
+                        { name: '背诵', duration: 20 },
+                        { name: '预习', duration: 15 },
+                        { name: '默写', duration: 20 },
+                        { name: '练习册', duration: 30 },
+                        { name: '作文', duration: 40 }
+                    ],
+                    shuxue: [
+                        { name: '练习册', duration: 30 },
+                        { name: '试卷', duration: 60 },
+                        { name: '错题整理', duration: 30 }
+                    ],
+                    yingyu: [
+                        { name: '练习册', duration: 25 },
+                        { name: '试卷', duration: 45 },
+                        { name: '默写背诵', duration: 20 }
+                    ]
+                });
+                
+                // 加载科目配置
+                const savedConfig = localStorage.getItem('subjectConfig');
+                if (savedConfig) {
+                    try {
+                        subjectConfig.value = JSON.parse(savedConfig);
+                    } catch (e) {
+                        console.error('科目配置加载失败', e);
+                    }
+                }
+
+                // 从 localStorage 加载（带数据验证）
+                const safeParse = (key, defaultValue) => {
+                    try {
+                        const data = localStorage.getItem(key);
+                        if (!data) return defaultValue;
+                        return JSON.parse(data);
+                    } catch (e) {
+                        console.warn(key + ' 数据损坏，已重置', e);
+                        localStorage.removeItem(key);
+                        return defaultValue;
+                    }
+                };
+                
+                const savedChild = localStorage.getItem('currentChild');
+                const savedMood = localStorage.getItem('childMood');
+                const savedToday = localStorage.getItem('todayHomework');
+                const savedAvatar = localStorage.getItem('childAvatar');
+                const savedHistory = localStorage.getItem('homeworkHistory');
+                if (savedChild) currentChild.value = safeParse('currentChild', null);
+                if (savedMood) childMood.value = savedMood;
+                if (savedAvatar) childAvatar.value = savedAvatar;
+                if (savedHistory) historyList.value = safeParse('homeworkHistory', []);
+                const savedLastSync = localStorage.getItem('lastSyncTime');
+                if (savedLastSync) lastSyncTime.value = savedLastSync;
+                
+                // 自动归档：过了 0 点才归档前一天的数据
+                const autoArchiveYesterday = () => {
+                    if (!savedToday) {
+                        console.log('没有找到当天作业数据');
+                        return;
+                    }
+                    
+                    try {
+                        const todayData = JSON.parse(savedToday);
+                        
+                        if (!todayData || todayData.length === 0) {
+                            console.log('当天作业数据为空');
+                            return;
+                        }
+                        
+                        // 检查是否有已完成的作业
+                        const doneItems = todayData.filter(h => h.status === 'done');
+                        
+                        // 如果有已完成的作业，检查完成日期
+                        if (doneItems.length > 0) {
+                            const today = new Date();
+                            const todayKey = today.toISOString().split('T')[0]; // 今天的日期 key
+                            
+                            // 检查已完成作业的完成日期是否是今天之前（即昨天或更早）
+                            const hasOldCompletion = doneItems.some(h => {
+                                if (h.completion_date) {
+                                    // 解析"2026 年 3 月 11 日 星期三"格式
+                                    const dateStr = h.completion_date.replace(/[年月]/g, '-').replace(/[日 ].*/g, '');
+                                    try {
+                                        const itemDate = new Date(dateStr).toISOString().split('T')[0];
+                                        return itemDate !== todayKey; // 完成日期不是今天
+                                    } catch (e) {
+                                        console.warn('日期解析失败:', h.completion_date);
+                                        return false;
+                                    }
+                                }
+                                return false;
+                            });
+                            
+                            if (hasOldCompletion) {
+                                // 有过期的已完成作业，需要归档
+                                const yesterday = new Date();
+                                yesterday.setDate(yesterday.getDate() - 1);
+                                const yesterdayKey = yesterday.toISOString().split('T')[0];
+                                const yesterdayDate = yesterday.getFullYear() + '年' + (yesterday.getMonth() + 1) + '月' + yesterday.getDate() + '日 ' + ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][yesterday.getDay()];
+                                
+                                // 检查是否已经归档
+                                const alreadyArchived = historyList.value.some(h => h.dateKey === yesterdayKey);
+                                if (!alreadyArchived) {
+                                    const archive = {
+                                        date: yesterdayDate,
+                                        dateKey: yesterdayKey,
+                                        items: doneItems
+                                    };
+                                    historyList.value.unshift(archive);
+                                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                                    console.log('已自动归档昨天的数据');
+                                }
+                                
+                                // 清空今天的作业（因为已经是昨天的数据了）
+                                todayList.value = [];
+                                localStorage.removeItem('todayHomework');
+                                console.log('已清空昨天的作业数据');
+                                return;
+                            }
+                        }
+                        
+                        // 没有过期数据，恢复今天的作业
+                        todayList.value = todayData;
+                        console.log('已恢复当天作业:', todayData.length, '项');
+                        
+                    } catch (e) {
+                        console.error('归档失败:', e);
+                        // 数据损坏时，尝试恢复
+                        todayList.value = safeParse('todayHomework', []);
+                    }
+                };
+                autoArchiveYesterday();
+
+                const currentDate = ref('');
+                const updateCurrentDate = () => {
+                    const now = new Date();
+                    const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                    currentDate.value = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + weekDays[now.getDay()];
+                };
+                updateCurrentDate();
+                const yuwenList = computed(() => homeworkList.value.filter(h => h.subject_name === '语文'));
+                const shuxueList = computed(() => homeworkList.value.filter(h => h.subject_name === '数学'));
+                const yingyuList = computed(() => homeworkList.value.filter(h => h.subject_name === '英语'));
+                const selectedCount = computed(() => homeworkList.value.filter(h => h.selected).length);
+                const totalCount = computed(() => todayList.value.length);
+                const doneCount = computed(() => todayList.value.filter(h => h.status === 'done').length);
+                const doingCount = computed(() => todayList.value.filter(h => h.status === 'doing').length);
+                const totalDuration = computed(() => todayList.value.filter(h => h.status === 'done').reduce((sum, h) => sum + parseInt(h.duration || 0), 0));
+                
+                const showToast = (msg, type) => {
+                    toastMsg.value = msg;
+                    toastClass.value = type === 'error' ? 'toast-error' : 'toast-success';
+                    setTimeout(() => { toastMsg.value = ''; }, 3000);
+                };
+
+                const getSubjectClass = (subject) => {
+                    if (subject === '语文') return 'yuwen';
+                    if (subject === '数学') return 'shuxue';
+                    if (subject === '英语') return 'yingyu';
+                    return '';
+                };
+
+                const getMoodEmoji = () => {
+                    const moods = { 'happy': '😃', 'normal': '😐', 'sad': '😔', 'angry': '😤' };
+                    return moods[childMood.value] || '😐';
+                };
+
+                const saveMood = () => {
+                    localStorage.setItem('childMood', childMood.value);
+                };
+                
+                // 自动计算年龄和年级
+                const calculateAgeAndGrade = () => {
+                    if (!childForm.value.birthdate) return;
+                    const birthDate = new Date(childForm.value.birthdate);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    childForm.value.age = age;
+                    // 自动计算年级：6岁一年级，7岁二年级...
+                    const gradeLevel = age - 6;
+                    const grades = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级', '初一', '初二', '初三', '高一', '高二', '高三'];
+                    if (gradeLevel >= 0 && gradeLevel < grades.length) {
+                        childForm.value.grade = grades[gradeLevel];
+                    }
+                };
+
+                const getCompareClass = (item) => {
+                    if (!item.duration || !item.expected_duration) return '';
+                    const ratio = item.duration / item.expected_duration;
+                    if (ratio > 1.2) return 'slow';
+                    if (ratio < 0.8) return 'fast';
+                    return '';
+                };
+
+                const getCompareText = (item) => {
+                    if (!item.duration || !item.expected_duration) return '';
+                    const ratio = item.duration / item.expected_duration;
+                    if (ratio > 1.2) return '(+超时' + Math.round((ratio-1)*100) + '%)';
+                    if (ratio < 0.8) return '(-快速' + Math.round((1-ratio)*100) + '%)';
+                    return '(正常)';
+                };
+                
+                // 学习天数
+                const studyDays = computed(() => {
+                    return historyList.value.length;
+                });
+                
+                // 本周统计
+                const weekStats = computed(() => {
+                    const now = new Date();
+                    const weekAgo = new Date(now);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    
+                    let homework = 0;
+                    let duration = 0;
+                    let days = 0;
+                    
+                    historyList.value.forEach(day => {
+                        const dayDate = new Date(day.dateKey);
+                        if (dayDate >= weekAgo) {
+                            homework += day.items.length;
+                            duration += day.items.reduce((sum, item) => sum + parseInt(item.duration || 0), 0);
+                            days++;
+                        }
+                    });
+                    
+                    // 计算平均每天学习时间
+                    const avgDailyDuration = days > 0 ? Math.round(duration / days) : 0;
+                    // 计算平均每天完成作业数量
+                    const avgDailyHomework = days > 0 ? Math.round(homework / days) : 0;
+                    
+                    return { homework, duration, days, avgDailyDuration, avgDailyHomework };
+                });
+                
+                // 学科统计
+                const subjectStats = computed(() => {
+                    const stats = {};
+                    subjectList.value.forEach(subject => {
+                        stats[subject.key] = 0;
+                    });
+                    
+                    historyList.value.forEach(day => {
+                        day.items.forEach(item => {
+                            const subject = subjectList.value.find(s => s.name === item.subject_name);
+                            if (subject) {
+                                stats[subject.key] = (stats[subject.key] || 0) + 1;
+                            }
+                        });
+                    });
+                    
+                    return stats;
+                });
+
+                // 学科作业数量排行（从高到低）
+                const subjectHomeworkRank = computed(() => {
+                    const stats = [];
+                    subjectList.value.forEach(subject => {
+                        const count = subjectStats.value[subject.key] || 0;
+                        if (count > 0) {
+                            stats.push({
+                                name: subject.name,
+                                count: count,
+                                color: subject.color
+                            });
+                        }
+                    });
+                    return stats.sort((a, b) => b.count - a.count);
+                });
+
+                // 学科时长排行（从高到低）
+                const subjectDurationRank = computed(() => {
+                    const durationStats = {};
+                    subjectList.value.forEach(subject => {
+                        durationStats[subject.key] = 0;
+                    });
+                    
+                    historyList.value.forEach(day => {
+                        day.items.forEach(item => {
+                            const subject = subjectList.value.find(s => s.name === item.subject_name);
+                            if (subject) {
+                                durationStats[subject.key] = (durationStats[subject.key] || 0) + parseInt(item.duration || 0);
+                            }
+                        });
+                    });
+
+                    const stats = [];
+                    subjectList.value.forEach(subject => {
+                        const duration = durationStats[subject.key] || 0;
+                        if (duration > 0) {
+                            stats.push({
+                                name: subject.name,
+                                duration: duration,
+                                color: subject.color
+                            });
+                        }
+                    });
+                    return stats.sort((a, b) => b.duration - a.duration);
+                });
+
+                const loadData = async () => {
+                    // 根据科目配置生成作业模板
+                    const generateTemplates = () => {
+                        const templates = [];
+                        let id = 1;
+                        
+                        // 遍历所有科目（包含自定义科目）
+                        subjectList.value.forEach(subject => {
+                            (subjectConfig.value[subject.key] || []).forEach(task => {
+                                templates.push({
+                                    template_id: id++,
+                                    subject_name: subject.name,
+                                    task_name: task.name,
+                                    expected_duration: task.duration
+                                });
+                            });
+                        });
+                        
+                        return templates;
+                    };
+                    
+                    // 使用科目配置生成作业列表
+                    homeworkList.value = generateTemplates();
+                    
+                    // 可选：如果后端可用，尝试从 API 加载（带超时控制）
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 1000);
+                        const templatesRes = await fetch(API_BASE + '/templates', { 
+                            signal: controller.signal,
+                            mode: 'no-cors'
+                        });
+                        clearTimeout(timeoutId);
+                        const templates = await templatesRes.json();
+                        if (templates && templates.length > 0) {
+                            homeworkList.value = templates.map(t => ({ ...t, selected: false }));
+                        }
+                    } catch (e) {
+                        // 静默失败，使用科目配置数据，不输出错误
+                    }
+                };
+
+                const assignHomework = () => {
+                    if (selectedCount.value === 0) {
+                        showToast('请至少选择一项作业', 'error');
+                        return;
+                    }
+                    todayList.value = homeworkList.value.filter(h => h.selected).map(h => ({
+                        ...h,
+                        status: 'doing',
+                        duration: ''
+                    }));
+                    localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                    showHomeworkSelector.value = false;
+                    showToast('已布置 ' + selectedCount.value + ' 项作业', 'success');
+                };
+
+                const archiveToday = () => {
+                    const doneItems = todayList.value.filter(h => h.status === 'done');
+                    if (doneItems.length === 0) return;
+                    const archive = {
+                        date: currentDate.value,
+                        dateKey: new Date().toISOString().split('T')[0],
+                        items: doneItems
+                    };
+                    const existingIndex = historyList.value.findIndex(h => h.dateKey === archive.dateKey);
+                    if (existingIndex >= 0) {
+                        historyList.value[existingIndex] = archive;
+                    } else {
+                        historyList.value.unshift(archive);
+                    }
+                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                };
+
+                const resetHomework = () => {
+                    archiveToday();
+                    todayList.value = [];
+                    homeworkList.value.forEach(h => h.selected = false);
+                    localStorage.removeItem('todayHomework');
+                    showToast('已归档并清空', 'success');
+                };
+                
+                // 导出数据到文件
+                const exportData = () => {
+                    const data = {
+                        version: '1.0',
+                        exportTime: new Date().toISOString(),
+                        currentChild: currentChild.value,
+                        childMood: childMood.value,
+                        todayHomework: todayList.value,
+                        homeworkHistory: historyList.value
+                    };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '学习进度备份_' + new Date().toISOString().split('T')[0] + '.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    // 手机端提示保存位置
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        showToast('备份已保存到下载文件夹', 'success');
+                    } else {
+                        showToast('数据已导出到下载目录', 'success');
+                    }
+                    
+                    // 自动复制到剪贴板，方便手动保存
+                    const jsonStr = JSON.stringify(data);
+                    navigator.clipboard.writeText(jsonStr).then(() => {
+                        setTimeout(() => {
+                            showToast('备份内容已复制到剪贴板', 'success');
+                        }, 1000);
+                    }).catch(() => {});
+                };
+                
+                // 导出Excel
+                const exportExcel = () => {
+                    if (!currentChild.value) {
+                        showToast('请先设置孩子信息', 'error');
+                        return;
+                    }
+                    // 1. 基本信息表
+                    const basicInfo = [
+                        ['孩子姓名', currentChild.value.child_name],
+                        ['年级', currentChild.value.grade],
+                        ['年龄', currentChild.value.age + '岁'],
+                        ['性别', currentChild.value.gender],
+                        ['导出时间', new Date().toLocaleString('zh-CN')],
+                        ['总学习天数', studyDays.value + '天'],
+                        ['总作业数量', weekStats.value.homework + '项'],
+                        ['总学习时长', weekStats.value.duration + '分钟']
+                    ];
+                    // 2. 每日汇总表
+                    const dailySummary = [['日期', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
+                    historyList.value.forEach(day => {
+                        const count = day.items.length;
+                        const duration = day.items.reduce((sum, item) => sum + parseInt(item.duration || 0), 0);
+                        const avgDuration = count > 0 ? Math.round(duration / count) : 0;
+                        dailySummary.push([day.date, count, duration, avgDuration]);
+                    });
+                    // 3. 科目统计表
+                    const subjectSummary = [['科目', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
+                    subjectList.value.forEach(subject => {
+                        let count = 0, duration = 0;
+                        historyList.value.forEach(day => {
+                            day.items.forEach(item => {
+                                if (item.subject_name === subject.name) {
+                                    count++;
+                                    duration += parseInt(item.duration || 0);
+                                }
+                            });
+                        });
+                        const avgDuration = count > 0 ? Math.round(duration / count) : 0;
+                        if (count > 0) {
+                            subjectSummary.push([subject.name, count, duration, avgDuration]);
+                        }
+                    });
+                    // 4. 作业明细表
+                    const detailList = [['日期', '科目', '作业名称', '用时(分钟)', '预期用时(分钟)', '状态', '异常备注']];
+                    historyList.value.forEach(day => {
+                        day.items.forEach(item => {
+                            detailList.push([
+                                day.date,
+                                item.subject_name,
+                                item.task_name,
+                                item.duration,
+                                item.expected_duration || '',
+                                item.status === 'done' ? '已完成' : '未完成',
+                                item.abnormal_note || ''
+                            ]);
+                        });
+                    });
+                    // 创建工作簿
+                    const wb = XLSX.utils.book_new();
+                    // 添加工作表
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(basicInfo), '基本信息');
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dailySummary), '每日汇总');
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(subjectSummary), '科目统计');
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detailList), '作业明细');
+                    // 导出文件
+                    XLSX.writeFile(wb, `${currentChild.value.child_name}_学习统计_${new Date().toISOString().split('T')[0]}.xlsx`);
+                    showToast('Excel已导出到下载目录', 'success');
+                };
+                
+                // 渲染报告页饼图
+                const renderPieCharts = () => {
+                    // 渲染作业数量饼图
+                    const homeworkPieCtx = document.getElementById('homeworkPieChart');
+                    if (homeworkPieCtx) {
+                        if (homeworkPieInstance) homeworkPieInstance.destroy();
+                        const homeworkData = subjectHomeworkRank.value.filter(item => item.count > 0);
+                        const totalHomework = homeworkData.reduce((sum, item) => sum + item.count, 0);
+                        if (totalHomework > 0) {
+                            homeworkPieInstance = new Chart(homeworkPieCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: homeworkData.map(item => item.name),
+                                    datasets: [{
+                                        data: homeworkData.map(item => item.count),
+                                        backgroundColor: homeworkData.map(item => item.color + '66'),
+                                        borderColor: homeworkData.map(item => item.color),
+                                        borderWidth: 0,
+                                        hoverOffset: 8
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    cutout: '60%', // 甜甜圈中空比例
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'bottom',
+                                            align: 'center',
+                                            labels: {
+                                                padding: 15,
+                                                usePointStyle: true,
+                                                boxWidth: 12,
+                                                font: { size: 11 },
+                                                textWidth: 120,
+                                                generateLabels: function(chart) {
+                                                    const data = chart.data;
+                                                    if (data.labels.length && data.datasets.length) {
+                                                        return data.labels.map(function(label, i) {
+                                                            const meta = chart.getDatasetMeta(0);
+                                                            const style = meta.controller.getStyle(i);
+                                                            const value = data.datasets[0].data[i];
+                                                            const percentage = totalHomework > 0 ? Math.round((value / totalHomework) * 100) : 0;
+                                                            return {
+                                                                text: `${label}: ${value}项 (${percentage}%)`,
+                                                                fillStyle: style.backgroundColor,
+                                                                strokeStyle: style.borderColor,
+                                                                lineWidth: style.borderWidth,
+                                                                pointStyle: 'circle',
+                                                                fontColor: chart.options.plugins.legend.labels.color
+                                                            };
+                                                        });
+                                                    }
+                                                    return [];
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    const value = context.parsed;
+                                                    const percentage = totalHomework > 0 ? Math.round((value / totalHomework) * 100) : 0;
+                                                    return `${context.label}: ${value} 项 (${percentage}%)`;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    // 渲染学习时长饼图
+                    const durationPieCtx = document.getElementById('durationPieChart');
+                    if (durationPieCtx) {
+                        if (durationPieInstance) durationPieInstance.destroy();
+                        const durationData = subjectDurationRank.value.filter(item => item.duration > 0);
+                        const totalDuration = durationData.reduce((sum, item) => sum + item.duration, 0);
+                        if (totalDuration > 0) {
+                            durationPieInstance = new Chart(durationPieCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: durationData.map(item => item.name),
+                                    datasets: [{
+                                        data: durationData.map(item => item.duration),
+                                        backgroundColor: durationData.map(item => item.color + '66'),
+                                        borderColor: durationData.map(item => item.color),
+                                        borderWidth: 0,
+                                        hoverOffset: 8
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    cutout: '60%', // 甜甜圈中空比例
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'bottom',
+                                            align: 'center',
+                                            labels: {
+                                                padding: 15,
+                                                usePointStyle: true,
+                                                boxWidth: 12,
+                                                font: { size: 11 },
+                                                textWidth: 120,
+                                                generateLabels: function(chart) {
+                                                    const data = chart.data;
+                                                    if (data.labels.length && data.datasets.length) {
+                                                        return data.labels.map(function(label, i) {
+                                                            const meta = chart.getDatasetMeta(0);
+                                                            const style = meta.controller.getStyle(i);
+                                                            const value = data.datasets[0].data[i];
+                                                            const percentage = totalDuration > 0 ? Math.round((value / totalDuration) * 100) : 0;
+                                                            return {
+                                                                text: `${label}: ${value}分钟 (${percentage}%)`,
+                                                                fillStyle: style.backgroundColor,
+                                                                strokeStyle: style.borderColor,
+                                                                lineWidth: style.borderWidth,
+                                                                pointStyle: 'circle',
+                                                                fontColor: chart.options.plugins.legend.labels.color
+                                                            };
+                                                        });
+                                                    }
+                                                    return [];
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    const value = context.parsed;
+                                                    const percentage = totalDuration > 0 ? Math.round((value / totalDuration) * 100) : 0;
+                                                    return `${context.label}: ${value} 分钟 (${percentage}%)`;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                };
+                
+                // 从文件导入数据
+                const importData = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.currentChild) {
+                                currentChild.value = data.currentChild;
+                                localStorage.setItem('currentChild', JSON.stringify(data.currentChild));
+                            }
+                            if (data.childMood) {
+                                childMood.value = data.childMood;
+                                localStorage.setItem('childMood', data.childMood);
+                            }
+                            if (data.todayHomework) {
+                                todayList.value = data.todayHomework;
+                                localStorage.setItem('todayHomework', JSON.stringify(data.todayHomework));
+                            }
+                            if (data.homeworkHistory) {
+                                historyList.value = data.homeworkHistory;
+                                localStorage.setItem('homeworkHistory', JSON.stringify(data.homeworkHistory));
+                            }
+                            showToast('数据已恢复', 'success');
+                            showDataDialog.value = false;
+                        } catch (err) {
+                            showToast('文件格式错误', 'error');
+                            console.error('导入失败:', err);
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                
+                // 同步到云端
+                const syncToCloud = async () => {
+                    syncing.value = true;
+                    try {
+                        const data = {
+                            currentChild: currentChild.value,
+                            childMood: childMood.value,
+                            todayHomework: todayList.value,
+                            homeworkHistory: historyList.value,
+                            syncTime: new Date().toISOString()
+                        };
+                        const res = await fetch(API_BASE + '/sync', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        if (res.ok) {
+                            lastSyncTime.value = new Date().toLocaleString('zh-CN');
+                            localStorage.setItem('lastSyncTime', lastSyncTime.value);
+                            showToast('已同步到云端', 'success');
+                        } else {
+                            showToast('云端同步失败（后端未启动）', 'error');
+                        }
+                    } catch (e) {
+                        console.error('同步失败:', e);
+                        showToast('云端同步失败（后端未启动）', 'error');
+                    } finally {
+                        syncing.value = false;
+                    }
+                };
+                
+                // 从云端同步
+                const syncFromCloud = async () => {
+                    syncing.value = true;
+                    try {
+                        const res = await fetch(API_BASE + '/sync', { method: 'GET' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.currentChild) {
+                                currentChild.value = data.currentChild;
+                                localStorage.setItem('currentChild', JSON.stringify(data.currentChild));
+                            }
+                            if (data.childMood) {
+                                childMood.value = data.childMood;
+                                localStorage.setItem('childMood', data.childMood);
+                            }
+                            if (data.todayHomework) {
+                                todayList.value = data.todayHomework;
+                                localStorage.setItem('todayHomework', JSON.stringify(data.todayHomework));
+                            }
+                            if (data.homeworkHistory) {
+                                historyList.value = data.homeworkHistory;
+                                localStorage.setItem('homeworkHistory', JSON.stringify(data.homeworkHistory));
+                            }
+                            lastSyncTime.value = new Date().toLocaleString('zh-CN');
+                            localStorage.setItem('lastSyncTime', lastSyncTime.value);
+                            showToast('已从云端恢复', 'success');
+                        } else {
+                            showToast('云端无数据或后端未启动', 'error');
+                        }
+                    } catch (e) {
+                        console.error('同步失败:', e);
+                        showToast('云端同步失败（后端未启动）', 'error');
+                    } finally {
+                        syncing.value = false;
+                    }
+                };
+
+                // 计算某项作业的历史平均用时
+                const getAverageDuration = (taskName) => {
+                    const allCompletedItems = historyList.value.flatMap(day => day.items);
+                    const matchingItems = allCompletedItems.filter(h => h.task_name === taskName && h.duration);
+                    if (matchingItems.length === 0) return null;
+                    const total = matchingItems.reduce((sum, h) => sum + parseInt(h.duration), 0);
+                    return Math.round(total / matchingItems.length);
+                };
+                
+                // 检测是否异常（偏离平均值超过 30%）
+                const isAbnormal = (duration, avgDuration) => {
+                    if (!avgDuration || avgDuration === 0) return false;
+                    const ratio = duration / avgDuration;
+                    return ratio > 1.3 || ratio < 0.7;  // 偏离 30% 视为异常
+                };
+                
+                // 获取异常状态文本
+                const getAbnormalText = (duration, avgDuration) => {
+                    if (!avgDuration || avgDuration === 0) return '';
+                    const ratio = duration / avgDuration;
+                    if (ratio > 1.3) return '(+偏慢 ' + Math.round((ratio-1)*100) + '%)';
+                    if (ratio < 0.7) return '(-偏快 ' + Math.round((1-ratio)*100) + '%)';
+                    return '(正常)';
+                };
+                
+                // 显示异常备注对话框
+                const showAbnormalNote = (item) => {
+                    currentEditItem.value = item;
+                    abnormalNoteForm.value = item.abnormal_note || '';
+                    showAbnormalNoteDialog.value = true;
+                };
+                
+                // 保存异常备注
+                const saveAbnormalNote = () => {
+                    if (currentEditItem.value) {
+                        currentEditItem.value.abnormal_note = abnormalNoteForm.value;
+                        // 保存到当天作业
+                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                        // 同步到历史记录
+                        const todayKey = new Date().toISOString().split('T')[0];
+                        const dayIndex = historyList.value.findIndex(d => d.dateKey === todayKey);
+                        if (dayIndex >= 0) {
+                            const itemIndex = historyList.value[dayIndex].items.findIndex(i => i.template_id === currentEditItem.value.template_id);
+                            if (itemIndex >= 0) {
+                                historyList.value[dayIndex].items[itemIndex].abnormal_note = abnormalNoteForm.value;
+                                localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                            }
+                        }
+                        showToast('备注已保存', 'success');
+                        showAbnormalNoteDialog.value = false;
+                    }
+                };
+
+                // 提交成功庆祝动效
+                const createConfetti = () => {
+                    const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
+                    for (let i = 0; i < 50; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.style.position = 'fixed';
+                        confetti.style.width = '10px';
+                        confetti.style.height = '10px';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.left = Math.random() * 100 + 'vw';
+                        confetti.style.top = '-10px';
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                        confetti.style.animation = `confetti ${2 + Math.random() * 3}s linear forwards`;
+                        confetti.style.zIndex = '99999';
+                        confetti.style.pointerEvents = 'none';
+                        document.body.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 5000);
+                    }
+                };
+
+                // 同步到历史记录
+                const syncToHistory = (item) => {
+                    const todayKey = new Date().toISOString().split('T')[0];
+                    const todayDate = currentDate.value;
+                    
+                    // 检查今天的历史记录是否存在
+                    let todayHistory = historyList.value.find(h => h.dateKey === todayKey);
+                    if (!todayHistory) {
+                        todayHistory = { date: todayDate, dateKey: todayKey, items: [] };
+                        historyList.value.unshift(todayHistory);
+                    }
+                    
+                    // 检查该项作业是否已在历史记录中
+                    const existingItem = todayHistory.items.find(h => h.template_id === item.template_id);
+                    if (existingItem) {
+                        // 更新已有记录
+                        existingItem.duration = item.duration;
+                        existingItem.completion_date = item.completion_date;
+                        existingItem.is_abnormal = item.is_abnormal;
+                        existingItem.average_duration = item.average_duration;
+                        existingItem.abnormal_note = item.abnormal_note;
+                    } else {
+                        // 添加新记录
+                        todayHistory.items.push({ ...item });
+                    }
+                    
+                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                };
+
+                // 设置用时（快捷按钮）
+                const setDuration = (item, minutes) => {
+                    if (minutes && minutes > 0) {
+                        item.duration = parseInt(minutes);
+                    }
+                };
+
+                // 同步滑动条和输入框
+                const syncDuration = (item) => {
+                    item.duration = parseInt(item.duration);
+                };
+
+                const submit = (item) => {
+                    if (!item.duration) {
+                        showToast('请输入用时', 'error');
+                        return;
+                    }
+                    item.status = 'done';
+                    item.completion_date = currentDate.value;
+                    
+                    // 检测是否异常（偏离平均值超过 30%）
+                    const avgDuration = getAverageDuration(item.task_name);
+                    if (avgDuration && isAbnormal(parseInt(item.duration), avgDuration)) {
+                        item.is_abnormal = true;
+                        item.average_duration = avgDuration;
+                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                        // 自动弹出异常备注对话框
+                        currentEditItem.value = item;
+                        abnormalNoteForm.value = item.abnormal_note || '';
+                        showAbnormalNoteDialog.value = true;
+                    } else {
+                        item.is_abnormal = false;
+                        item.average_duration = avgDuration;
+                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                        showToast('提交成功！太棒了！', 'success');
+                    }
+                    
+                    // 同步到历史记录
+                    syncToHistory(item);
+                };
+
+                // 获取科目摘要
+                const getSubjectSummary = (subject) => {
+                    const tasks = subjectConfig.value[subject] || [];
+                    if (tasks.length === 0) return '未设置';
+                    return tasks.map(t => t.name).join('、');
+                };
+                
+                // 编辑科目
+                const editSubject = (subject) => {
+                    currentEditSubject.value = subject;
+                    const names = { yuwen: '语文', shuxue: '数学', yingyu: '英语' };
+                    currentEditSubjectName.value = names[subject];
+                    currentSubjectTasks.value = JSON.parse(JSON.stringify(subjectConfig.value[subject] || []));
+                    showSubjectEditDialog.value = true;
+                };
+                
+                // 添加作业任务
+                const addTask = () => {
+                    currentSubjectTasks.value.push({ name: '', duration: 30 });
+                };
+                
+                // 删除作业任务
+                const removeTask = (index) => {
+                    currentSubjectTasks.value.splice(index, 1);
+                };
+                
+                // 保存科目设置
+                const saveSubjectSettings = () => {
+                    // 过滤空任务
+                    currentSubjectTasks.value = currentSubjectTasks.value.filter(t => t.name.trim());
+                    subjectConfig.value[currentEditSubject.value] = currentSubjectTasks.value;
+                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    showToast('设置已保存', 'success');
+                    showSubjectEditDialog.value = false;
+                };
+                
+                // 添加新科目
+                const addNewSubject = () => {
+                    showAddSubjectDialog.value = true;
+                    newSubjectForm.value = { name: '', icon: '📚', color: '#667eea' };
+                };
+
+                // 保存新科目
+                const saveNewSubject = () => {
+                    if (!newSubjectForm.value.name.trim()) {
+                        showToast('请输入科目名称', 'error');
+                        return;
+                    }
+                    const key = 'custom_' + Date.now();
+                    const newSubject = {
+                        key: key,
+                        name: newSubjectForm.value.name.trim(),
+                        icon: newSubjectForm.value.icon,
+                        color: newSubjectForm.value.color,
+                        system: false
+                    };
+                    // 保存到自定义科目
+                    const savedCustomSubjects = localStorage.getItem('customSubjects');
+                    let customSubjects = [];
+                    if (savedCustomSubjects) {
+                        try {
+                            customSubjects = JSON.parse(savedCustomSubjects);
+                        } catch (e) {}
+                    }
+                    customSubjects.push(newSubject);
+                    localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+                    // 初始化科目配置，默认添加2个作业
+                    subjectConfig.value[key] = [
+                        { name: '练习', duration: 30 },
+                        { name: '试卷', duration: 60 }
+                    ];
+                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    loadSubjectList();
+                    loadData();
+                    showAddSubjectDialog.value = false;
+                    showToast('科目已添加', 'success');
+                };
+
+                // 删除自定义科目
+                const deleteSubject = (subjectKey) => {
+                    if (!confirm('确定要删除这个科目吗？相关作业数据不会丢失，但科目配置会被删除。')) {
+                        return;
+                    }
+                    // 从自定义科目中删除
+                    const savedCustomSubjects = localStorage.getItem('customSubjects');
+                    let customSubjects = [];
+                    if (savedCustomSubjects) {
+                        try {
+                            customSubjects = JSON.parse(savedCustomSubjects);
+                        } catch (e) {}
+                    }
+                    customSubjects = customSubjects.filter(s => s.key !== subjectKey);
+                    localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+                    // 从科目配置中删除
+                    delete subjectConfig.value[subjectKey];
+                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    loadSubjectList();
+                    loadData();
+                    showToast('科目已删除', 'success');
+                };
+                
+                // 恢复默认模板
+                const resetToDefaultTemplates = () => {
+                    if (confirm('确定恢复默认作业模板吗？\n\n语文：背诵、预习、默写、练习册、作文\n数学：练习册、试卷、错题整理\n英语：练习册、试卷、默写背诵')) {
+                        subjectConfig.value = {
+                            yuwen: [
+                                { name: '背诵', duration: 20 },
+                                { name: '预习', duration: 15 },
+                                { name: '默写', duration: 20 },
+                                { name: '练习册', duration: 30 },
+                                { name: '作文', duration: 40 }
+                            ],
+                            shuxue: [
+                                { name: '练习册', duration: 30 },
+                                { name: '试卷', duration: 60 },
+                                { name: '错题整理', duration: 30 }
+                            ],
+                            yingyu: [
+                                { name: '练习册', duration: 25 },
+                                { name: '试卷', duration: 45 },
+                                { name: '默写背诵', duration: 20 }
+                            ]
+                        };
+                        localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                        showToast('已恢复默认模板', 'success');
+                    }
+                };
+
+                // 显示重置确认对话框
+                const showResetConfirm = (type) => {
+                    resetType.value = type;
+                    showResetDialog.value = true;
+                };
+                
+                // 确认重置
+                const confirmReset = () => {
+                    if (resetType.value === 'history') {
+                        // 清空历史记录
+                        historyList.value = [];
+                        localStorage.removeItem('homeworkHistory');
+                        showToast('历史记录已清空', 'success');
+                    } else if (resetType.value === 'today') {
+                        // 清空当天作业
+                        todayList.value = [];
+                        homeworkList.value.forEach(h => h.selected = false);
+                        localStorage.removeItem('todayHomework');
+                        showToast('当天作业已清空', 'success');
+                    } else if (resetType.value === 'all') {
+                        // 重置全部
+                        historyList.value = [];
+                        todayList.value = [];
+                        homeworkList.value.forEach(h => h.selected = false);
+                        localStorage.removeItem('homeworkHistory');
+                        localStorage.removeItem('todayHomework');
+                        showToast('全部数据已重置', 'success');
+                    }
+                    showResetDialog.value = false;
+                    showDataDialog.value = false;
+                };
+
+                const editChild = () => {
+                    if (currentChild.value) {
+                        childForm.value = {
+                            child_name: currentChild.value.child_name,
+                            age: currentChild.value.age,
+                            grade: currentChild.value.grade,
+                            gender: currentChild.value.gender
+                        };
+                    } else {
+                        childForm.value = { child_name: '', age: 10, grade: '', gender: '男' };
+                    }
+                    showChildDialog.value = true;
+                };
+                
+                const editChildFromSettings = () => {
+                    showSettingsDialog.value = false;
+                    editChild();
+                };
+
+                const createChild = () => {
+                    if (!childForm.value.child_name) {
+                        showToast('请输入姓名', 'error');
+                        return;
+                    }
+                    // 深拷贝数据确保响应式更新
+                    currentChild.value = JSON.parse(JSON.stringify(childForm.value));
+                    // 强制保存到localStorage
+                    localStorage.setItem('currentChild', JSON.stringify(currentChild.value));
+                    if (childAvatar.value) {
+                        localStorage.setItem('childAvatar', childAvatar.value);
+                    }
+                    showToast('保存成功！', 'success');
+                    // 立即关闭对话框
+                    showChildDialog.value = false;
+                    // 重置表单
+                    childForm.value = { child_name: '', age: 10, grade: '', gender: '男' };
+                    // 强制刷新页面数据
+                    setTimeout(() => window.location.reload(), 200);
+                };
+                
+                // 显示统计图表
+                const showStatsChart = () => {
+                    showStatsDialog.value = true;
+                    setTimeout(() => {
+                        renderStatsChart();
+                    }, 100);
+                };
+                
+                // 渲染报告页面趋势图
+                const renderTrendChart = () => {
+                    const ctx = document.getElementById('reportChart');
+                    if (!ctx) return;
+                    
+                    if (reportChartInstance) {
+                        reportChartInstance.destroy();
+                    }
+                    
+                    const stats = calculateLast7DaysStats();
+                    const chartCtx = ctx.getContext('2d');
+                    
+                    // 作业数量渐变：蓝紫色渐变
+                    const homeworkGradient = chartCtx.createLinearGradient(0, 0, 0, 250);
+                    homeworkGradient.addColorStop(0, 'rgba(102, 126, 234, 1)');
+                    homeworkGradient.addColorStop(1, 'rgba(118, 75, 162, 0.6)');
+                    
+                    // 学习时长渐变：绿色渐变
+                    const durationGradient = chartCtx.createLinearGradient(0, 0, 0, 250);
+                    durationGradient.addColorStop(0, 'rgba(34, 197, 94, 1)');
+                    durationGradient.addColorStop(1, 'rgba(22, 163, 74, 0.6)');
+                    
+                    reportChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: stats.map(d => d.date),
+                            datasets: [
+                                {
+                                    label: '作业数量',
+                                    data: stats.map(d => d.homework),
+                                    backgroundColor: homeworkGradient,
+                                    borderWidth: 0,
+                                    borderRadius: 0,
+                                    borderSkipped: 'bottom',
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: '总用时 (分钟)',
+                                    data: stats.map(d => d.duration),
+                                    backgroundColor: durationGradient,
+                                    borderWidth: 0,
+                                    borderRadius: 0,
+                                    borderSkipped: 'bottom',
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: { 
+                                    display: true, 
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 12,
+                                            weight: 'bold'
+                                        },
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        pointStyle: 'circle'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 12,
+                                    borderRadius: 10,
+                                    titleFont: { size: 14, weight: 'bold' },
+                                    bodyFont: { size: 13 },
+                                    boxPadding: 6,
+                                    usePointStyle: true
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: { 
+                                        display: true, 
+                                        text: '作业数量',
+                                        font: { weight: 'bold', size: 12 }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0,0,0,0.05)',
+                                        drawBorder: false
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: { 
+                                        display: true, 
+                                        text: '总用时 (分钟)',
+                                        font: { weight: 'bold', size: 12 }
+                                    },
+                                    grid: { drawOnChartArea: false }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                };
+                
+                // 渲染统计图表
+                const renderStatsChart = () => {
+                    const ctx = document.getElementById('statsChart');
+                    if (!ctx) return;
+                    
+                    if (statsChartInstance) {
+                        statsChartInstance.destroy();
+                    }
+                    
+                    const stats = calculateLast7DaysStats();
+                    const chartCtx = ctx.getContext('2d');
+                    
+                    // 作业数量渐变：蓝紫色渐变
+                    const homeworkGradient = chartCtx.createLinearGradient(0, 0, 0, 250);
+                    homeworkGradient.addColorStop(0, 'rgba(102, 126, 234, 1)');
+                    homeworkGradient.addColorStop(1, 'rgba(118, 75, 162, 0.6)');
+                    
+                    // 学习时长渐变：绿色渐变
+                    const durationGradient = chartCtx.createLinearGradient(0, 0, 0, 250);
+                    durationGradient.addColorStop(0, 'rgba(34, 197, 94, 1)');
+                    durationGradient.addColorStop(1, 'rgba(22, 163, 74, 0.6)');
+                    
+                    const totalH = stats.reduce((sum, d) => sum + d.homework, 0);
+                    const totalD = stats.reduce((sum, d) => sum + d.duration, 0);
+                    statsSummary.value = {
+                        totalHomework: totalH,
+                        totalDuration: totalD,
+                        avgHomework: totalH > 0 ? Math.round(totalH / 7) : 0,
+                        avgDuration: totalD > 0 ? Math.round(totalD / 7) : 0
+                    };
+                    
+                    statsChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: stats.map(d => d.date),
+                            datasets: [
+                                {
+                                    label: '作业数量',
+                                    data: stats.map(d => d.homework),
+                                    backgroundColor: homeworkGradient,
+                                    borderWidth: 0,
+                                    borderRadius: 0,
+                                    borderSkipped: 'bottom',
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: '总用时 (分钟)',
+                                    data: stats.map(d => d.duration),
+                                    backgroundColor: durationGradient,
+                                    borderWidth: 0,
+                                    borderRadius: 0,
+                                    borderSkipped: 'bottom',
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: { 
+                                    display: true, 
+                                    position: 'top',
+                                    labels: {
+                                        font: {
+                                            size: 12,
+                                            weight: 'bold'
+                                        },
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        pointStyle: 'circle'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 12,
+                                    borderRadius: 10,
+                                    titleFont: { size: 14, weight: 'bold' },
+                                    bodyFont: { size: 13 },
+                                    boxPadding: 6,
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: { 
+                                        display: true, 
+                                        text: '作业数量',
+                                        font: { weight: 'bold', size: 12 }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0,0,0,0.05)',
+                                        drawBorder: false
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: { 
+                                        display: true, 
+                                        text: '总用时 (分钟)',
+                                        font: { weight: 'bold', size: 12 }
+                                    },
+                                    grid: { drawOnChartArea: false }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                };
+                
+                // 计算最近 7 天统计数据
+                const calculateLast7DaysStats = () => {
+                    const stats = [];
+                    const today = new Date();
+                    
+                    for (let i = 6; i >= 0; i--) {
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - i);
+                        const dateKey = date.toISOString().split('T')[0];
+                        const dateStr = (date.getMonth() + 1) + '/' + date.getDate();
+                        
+                        const dayRecord = historyList.value.find(h => h.dateKey === dateKey);
+                        const homework = dayRecord ? dayRecord.items.length : 0;
+                        const duration = dayRecord ? dayRecord.items.reduce((sum, item) => sum + parseInt(item.duration || 0), 0) : 0;
+                        
+                        stats.push({ date: dateStr, homework: homework, duration: duration });
+                    }
+                    
+                    return stats;
+                };
+
+                // 压缩图片函数
+                const compressImage = (file, maxWidth = 200, quality = 0.7) => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+                                if (width > maxWidth) {
+                                    height = (maxWidth / width) * height;
+                                    width = maxWidth;
+                                }
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                resolve(canvas.toDataURL('image/jpeg', quality));
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                };
+
+                const triggerAvatarUpload = () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        
+                        // 压缩图片
+                        const compressedDataUrl = await compressImage(file, 200, 0.7);
+                        childAvatar.value = compressedDataUrl;
+                        localStorage.setItem('childAvatar', compressedDataUrl);
+                        showToast('头像已保存', 'success');
+                    };
+                    input.click();
+                };
+
+                onMounted(() => {
+                    // 页面加载时强制关闭所有弹窗
+                    showHelpDialog.value = false;
+                    showMoodDialog.value = false;
+                    showChildDialog.value = false;
+                    showDataDialog.value = false;
+                    showAbnormalNoteDialog.value = false;
+                    showResetDialog.value = false;
+                    showSubjectEditDialog.value = false;
+                    showStatsDialog.value = false;
+                    showAddSubjectDialog.value = false;
+                    
+                    loadData();
+                    
+                    // 监听 Tab 切换，渲染报告页面图表
+                    watch(currentTab, (newTab) => {
+                        if (newTab === 'report') {
+                            setTimeout(() => {
+                                renderTrendChart();
+                                renderPieCharts();
+                            }, 100);
+                        }
+                    });
+                });
+
+                return {
+                    homeworkList, todayList, currentChild, childMood, childAvatar, showHomeworkSelector, showChildDialog, showMoodDialog, showHistoryDialog, historyList, toastMsg, toastClass, childForm,
+                    showAbnormalNoteDialog, abnormalNoteForm, currentEditItem, showDataDialog, showHelpDialog,
+                    showResetDialog, resetType,
+                    showSubjectEditDialog, showStatsDialog, statsSummary,
+                    currentEditSubject, currentEditSubjectName, currentSubjectTasks, subjectConfig,
+                    currentTab, studyDays, weekStats, subjectStats, subjectHomeworkRank, subjectDurationRank,
+                    yuwenList, shuxueList, yingyuList, selectedCount, totalCount, doneCount, doingCount, totalDuration, currentDate,
+                    getSubjectClass, getMoodEmoji, saveMood, getCompareClass, getCompareText, getAverageDuration, isAbnormal, getAbnormalText, showAbnormalNote, saveAbnormalNote,
+                    getSubjectSummary, editSubject, addTask, removeTask, saveSubjectSettings, editChildFromSettings, resetToDefaultTemplates, triggerAvatarUpload,
+                    showStatsChart, renderTrendChart, renderPieCharts, calculateAgeAndGrade, addNewSubject, saveNewSubject, deleteSubject, exportExcel, subjectList, showAddSubjectDialog, newSubjectForm,
+                    exportData, importData,
+                    showResetConfirm, confirmReset,
+                    loadData, assignHomework, resetHomework, submit, createChild, editChild, setDuration, syncDuration
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
