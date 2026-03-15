@@ -1,17 +1,5 @@
 {
-  "name": "studytracker",
-  "displayName": "学习监督",
-  "version": "2.1.1",
-  "description": "Study Tracker Mobile App",
-  "main": "index.js",
-  "scripts": {
-    "build": "cordova build android"
-  },
-  "dependencies": {},
-  "cordova": {
-    "platforms": [
-      "android"
-    ],
-    "plugins": {}
+  "devDependencies": {
+    "cordova-plugin-file": "^8.1.3"
   }
 }

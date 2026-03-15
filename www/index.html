@@ -47,7 +47,7 @@
         .child-avatar:active { animation: pulse 0.3s ease; }
         .child-info { flex: 1; position: relative; z-index: 1; pointer-events: none; }
         .child-info * { pointer-events: auto; }
-        .child-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .child-name { font-size: 14px; font-weight: bold; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.3; word-break: break-all; white-space: normal; }
         .child-detail { font-size: 14px; opacity: 0.95; }
         .mood-display { font-size: 28px; background: rgba(255,255,255,0.2); padding: 10px 14px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; position: relative; z-index: 10; pointer-events: auto; }
         .mood-display:active { animation: bounce 0.3s ease; }
@@ -225,14 +225,14 @@
                                 <span style="font-size:11px;color:#ccc;" v-else title="首次完成该作业后将显示平均时间">平均：--</span>
                             </div>
                             <!-- 快捷按钮 + 滑动条 一行 -->
-                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                                <button @click="setDuration(item, item.expected_duration)" style="padding:4px 8px;font-size:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">预期</button>
-                                <button @click="setDuration(item, getAverageDuration(item.task_name))" v-if="getAverageDuration(item.task_name)" style="padding:4px 8px;font-size:10px;background:#fef3c7;border:1px solid #fde68a;border-radius:4px;color:#92400e;white-space:nowrap;">平均</button>
-                                <button @click="setDuration(item, 15)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">15</button>
-                                <button @click="setDuration(item, 30)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">30</button>
-                                <button @click="setDuration(item, 45)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">45</button>
-                                <button @click="setDuration(item, 60)" style="padding:4px 8px;font-size:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;color:#64748b;white-space:nowrap;">60</button>
-                                <input type="range" v-model="item.duration" :min="1" :max="Math.max(120, item.expected_duration * 2)" step="5" style="flex:1;accent-color:#667eea;height:20px;" @input="syncDuration(item)"/>
+                            <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px;overflow:hidden;max-width:100%;">
+                                <button @click="setDuration(item, item.expected_duration)" style="padding:3px 6px;font-size:9px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;color:#64748b;white-space:nowrap;flex-shrink:0;min-width:28px;">预期</button>
+                                <button @click="setDuration(item, getAverageDuration(item.task_name))" v-if="getAverageDuration(item.task_name)" style="padding:3px 6px;font-size:9px;background:#fef3c7;border:1px solid #fde68a;border-radius:3px;color:#92400e;white-space:nowrap;flex-shrink:0;min-width:28px;">平均</button>
+                                <button @click="setDuration(item, 15)" style="padding:3px 6px;font-size:9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;color:#64748b;white-space:nowrap;flex-shrink:0;min-width:24px;">15</button>
+                                <button @click="setDuration(item, 30)" style="padding:3px 6px;font-size:9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;color:#64748b;white-space:nowrap;flex-shrink:0;min-width:24px;">30</button>
+                                <button @click="setDuration(item, 45)" style="padding:3px 6px;font-size:9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;color:#64748b;white-space:nowrap;flex-shrink:0;min-width:24px;">45</button>
+                                <button @click="setDuration(item, 60)" style="padding:3px 6px;font-size:9px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;color:#64748b;white-space:nowrap;flex-shrink:0;min-width:24px;">60</button>
+                                <input type="range" v-model="item.duration" :min="1" :max="Math.max(120, item.expected_duration * 2)" step="5" style="flex:1;min-width:60px;accent-color:#667eea;height:16px;" @input="syncDuration(item)"/>
                             </div>
                             <!-- 输入框 + 提交 一行 -->
                             <div class="homework-input-row">
@@ -436,13 +436,13 @@
             <div class="dialog" style="max-width:400px;max-height:80vh;overflow-y:auto;" @click.stop>
                 <div class="dialog-title">📜 完成历史</div>
                 
-                <div v-if="historyList.length === 0" style="text-align:center;padding:30px;color:#999;">
+                <div v-if="sortedHistoryList.length === 0" style="text-align:center;padding:30px;color:#999;">
                     <div style="font-size:40px;margin-bottom:10px;">📝</div>
                     <div>暂无历史记录</div>
                 </div>
                 
                 <div v-else>
-                    <div v-for="day in historyList" :key="day.dateKey" style="margin-bottom:20px;">
+                    <div v-for="day in sortedHistoryList" :key="day.dateKey" style="margin-bottom:20px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #e9ecef;">
                             <div style="font-size:14px;font-weight:bold;color:#667eea;">{{ day.date }}</div>
                             <button @click="deleteDay(day.dateKey)" style="padding:4px 8px;font-size:11px;background:#fee;border:1px solid #fcc;border-radius:4px;color:#c00;cursor:pointer;">🗑️ 删除这天</button>
@@ -958,7 +958,13 @@
                 const showChildDialog = ref(false);
                 const showMoodDialog = ref(false);
                 const showHistoryDialog = ref(false);
-                const historyList = ref([]);
+                                const historyList = ref([]);
+                // 按日期降序排序的历史记录（最新的在前）
+                const sortedHistoryList = computed(() => {
+                    return [...historyList.value].sort((a, b) => {
+                        return b.dateKey.localeCompare(a.dateKey);
+                    });
+                });
                 const toastMsg = ref('');
                 const toastClass = ref('toast-success');
                 const childForm = ref({ child_name: '', age: 10, grade: '', gender: '男', birthdate: '' });
@@ -989,7 +995,8 @@
                     const defaultSubjects = [
                         { key: 'yuwen', name: '语文', icon: '📖', color: '#e53935', system: true },
                         { key: 'shuxue', name: '数学', icon: '📐', color: '#1e88e5', system: true },
-                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true }
+                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true },
+                        { key: 'wuli', name: '物理', icon: '⚛️', color: '#9c27b0', system: true }
                     ];
                     const savedCustomSubjects = localStorage.getItem('customSubjects');
                     let customSubjects = [];
@@ -1022,6 +1029,11 @@
                         { name: '练习册', duration: 25 },
                         { name: '试卷', duration: 45 },
                         { name: '默写背诵', duration: 20 }
+                    ],
+                    wuli: [
+                        { name: '练习册', duration: 30 },
+                        { name: '试卷', duration: 50 },
+                        { name: '实验报告', duration: 25 }
                     ]
                 });
                 
@@ -1053,10 +1065,18 @@
                 const savedToday = localStorage.getItem('todayHomework');
                 const savedAvatar = localStorage.getItem('childAvatar');
                 const savedHistory = localStorage.getItem('homeworkHistory');
+                const savedChildForm = localStorage.getItem('childForm');
                 if (savedChild) currentChild.value = safeParse('currentChild', null);
                 if (savedMood) childMood.value = savedMood;
                 if (savedAvatar) childAvatar.value = savedAvatar;
                 if (savedHistory) historyList.value = safeParse('homeworkHistory', []);
+                if (savedChildForm) {
+                    try {
+                        childForm.value = JSON.parse(savedChildForm);
+                    } catch (e) {
+                        console.error('childForm 加载失败', e);
+                    }
+                }
                 const savedLastSync = localStorage.getItem('lastSyncTime');
                 if (savedLastSync) lastSyncTime.value = savedLastSync;
                 
@@ -1409,33 +1429,28 @@
                         version: '1.0',
                         exportTime: new Date().toISOString(),
                         currentChild: currentChild.value,
+                        childForm: childForm.value,
                         childMood: childMood.value,
+                        childAvatar: childAvatar.value,
                         todayHomework: todayList.value,
-                        homeworkHistory: historyList.value
+                        homeworkHistory: historyList.value,
+                        subjectConfig: subjectConfig.value,
+                        customSubjects: localStorage.getItem('customSubjects')
                     };
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = '学习进度备份_' + new Date().toISOString().split('T')[0] + '.json';
-                    a.click();
-                    URL.revokeObjectURL(url);
+                    const jsonStr = JSON.stringify(data, null, 2);
+                    const backupFileName = '学习进度备份_' + new Date().toISOString().split('T')[0] + '.json';
                     
-                    // 手机端提示保存位置
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    if (isMobile) {
-                        showToast('备份已保存到下载文件夹', 'success');
-                    } else {
-                        showToast('数据已导出到下载目录', 'success');
-                    }
+                    // 复制到剪贴板
+                    const textarea = document.createElement('textarea');
+                    textarea.value = jsonStr;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
                     
-                    // 自动复制到剪贴板，方便手动保存
-                    const jsonStr = JSON.stringify(data);
-                    navigator.clipboard.writeText(jsonStr).then(() => {
-                        setTimeout(() => {
-                            showToast('备份内容已复制到剪贴板', 'success');
-                        }, 1000);
-                    }).catch(() => {});
+                    alert('✅ 备份成功！\n\n📋 备份内容已自动复制到剪贴板\n\n💾 保存步骤：\n1. 打开手机「文件管理」APP\n2. 进入内部存储/Download 目录\n3. 新建文本文件，命名为：' + backupFileName + '\n4. 打开文件，粘贴剪贴板内容，保存即可\n\n恢复时：选择这个文件，点恢复数据即可。');
                 };
                 
                 // 导出Excel
@@ -1444,27 +1459,30 @@
                         showToast('请先设置孩子信息', 'error');
                         return;
                     }
-                    // 1. 基本信息表
-                    const basicInfo = [
-                        ['孩子姓名', currentChild.value.child_name],
-                        ['年级', currentChild.value.grade],
-                        ['年龄', currentChild.value.age + '岁'],
-                        ['性别', currentChild.value.gender],
-                        ['导出时间', new Date().toLocaleString('zh-CN')],
-                        ['总学习天数', studyDays.value + '天'],
-                        ['总作业数量', weekStats.value.homework + '项'],
-                        ['总学习时长', weekStats.value.duration + '分钟']
-                    ];
-                    // 2. 每日汇总表
-                    const dailySummary = [['日期', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
+                    // 生成 CSV 内容
+                    let csv = '\uFEFF'; // BOM for Excel
+                    csv += '基本信息\n';
+                    csv += '孩子姓名，' + currentChild.value.child_name + '\n';
+                    csv += '年级，' + currentChild.value.grade + '\n';
+                    csv += '年龄，' + currentChild.value.age + '岁\n';
+                    csv += '性别，' + currentChild.value.gender + '\n';
+                    csv += '导出时间，' + new Date().toLocaleString('zh-CN') + '\n';
+                    csv += '总学习天数，' + studyDays.value + '天\n';
+                    csv += '总作业数量，' + weekStats.value.homework + '项\n';
+                    csv += '总学习时长，' + weekStats.value.duration + '分钟\n\n';
+                    
+                    csv += '每日汇总\n';
+                    csv += '日期，作业数量，总时长 (分钟),平均时长 (分钟)\n';
                     historyList.value.forEach(day => {
                         const count = day.items.length;
                         const duration = day.items.reduce((sum, item) => sum + parseInt(item.duration || 0), 0);
-                        const avgDuration = count > 0 ? Math.round(duration / count) : 0;
-                        dailySummary.push([day.date, count, duration, avgDuration]);
+                        const avg = count > 0 ? Math.round(duration / count) : 0;
+                        csv += day.date + ',' + count + ',' + duration + ',' + avg + '\n';
                     });
-                    // 3. 科目统计表
-                    const subjectSummary = [['科目', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
+                    csv += '\n';
+                    
+                    csv += '科目统计\n';
+                    csv += '科目，作业数量，总时长 (分钟),平均时长 (分钟)\n';
                     subjectList.value.forEach(subject => {
                         let count = 0, duration = 0;
                         historyList.value.forEach(day => {
@@ -1475,36 +1493,33 @@
                                 }
                             });
                         });
-                        const avgDuration = count > 0 ? Math.round(duration / count) : 0;
                         if (count > 0) {
-                            subjectSummary.push([subject.name, count, duration, avgDuration]);
+                            const avg = Math.round(duration / count);
+                            csv += subject.name + ',' + count + ',' + duration + ',' + avg + '\n';
                         }
                     });
-                    // 4. 作业明细表
-                    const detailList = [['日期', '科目', '作业名称', '用时(分钟)', '预期用时(分钟)', '状态', '异常备注']];
+                    csv += '\n';
+                    
+                    csv += '作业明细\n';
+                    csv += '日期，科目，作业名称，用时 (分钟),预期用时 (分钟),状态，异常备注\n';
                     historyList.value.forEach(day => {
                         day.items.forEach(item => {
-                            detailList.push([
-                                day.date,
-                                item.subject_name,
-                                item.task_name,
-                                item.duration,
-                                item.expected_duration || '',
-                                item.status === 'done' ? '已完成' : '未完成',
-                                item.abnormal_note || ''
-                            ]);
+                            csv += day.date + ',' + item.subject_name + ',' + item.task_name + ',' + item.duration + ',' + (item.expected_duration || '') + ',' + (item.status === 'done' ? '已完成' : '未完成') + ',' + (item.abnormal_note || '') + '\n';
                         });
                     });
-                    // 创建工作簿
-                    const wb = XLSX.utils.book_new();
-                    // 添加工作表
-                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(basicInfo), '基本信息');
-                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dailySummary), '每日汇总');
-                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(subjectSummary), '科目统计');
-                    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detailList), '作业明细');
-                    // 导出文件
-                    XLSX.writeFile(wb, `${currentChild.value.child_name}_学习统计_${new Date().toISOString().split('T')[0]}.xlsx`);
-                    showToast('Excel已导出到下载目录', 'success');
+                    
+                    // 复制到剪贴板
+                    const textarea = document.createElement('textarea');
+                    textarea.value = csv;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    const fileName = currentChild.value.child_name + '_学习统计_' + new Date().toISOString().split('T')[0] + '.csv';
+                    alert('✅ Excel(CSV) 已导出！\n\n📋 数据已自动复制到剪贴板\n\n💾 保存步骤：\n1. 打开手机「文件管理」APP\n2. 进入内部存储/Download 目录\n3. 新建文本文件，命名为：' + fileName + '\n4. 打开文件，粘贴剪贴板内容，保存\n5. 直接用 Excel 或 WPS 打开这个.csv 文件即可查看\n\nCSV 是 Excel 支持的格式，可以直接打开！');
                 };
                 
 
@@ -1697,9 +1712,17 @@
                                 currentChild.value = data.currentChild;
                                 localStorage.setItem('currentChild', JSON.stringify(data.currentChild));
                             }
+                            if (data.childForm) {
+                                childForm.value = data.childForm;
+                                localStorage.setItem('childForm', JSON.stringify(data.childForm));
+                            }
                             if (data.childMood) {
                                 childMood.value = data.childMood;
                                 localStorage.setItem('childMood', data.childMood);
+                            }
+                            if (data.childAvatar) {
+                                childAvatar.value = data.childAvatar;
+                                localStorage.setItem('childAvatar', data.childAvatar);
                             }
                             if (data.todayHomework) {
                                 todayList.value = data.todayHomework;
@@ -1708,6 +1731,13 @@
                             if (data.homeworkHistory) {
                                 historyList.value = data.homeworkHistory;
                                 localStorage.setItem('homeworkHistory', JSON.stringify(data.homeworkHistory));
+                            }
+                            if (data.subjectConfig) {
+                                subjectConfig.value = data.subjectConfig;
+                                localStorage.setItem('subjectConfig', JSON.stringify(data.subjectConfig));
+                            }
+                            if (data.customSubjects) {
+                                localStorage.setItem('customSubjects', data.customSubjects);
                             }
                             showToast('数据已恢复', 'success');
                             showDataDialog.value = false;
@@ -2096,7 +2126,8 @@
                             child_name: currentChild.value.child_name,
                             age: currentChild.value.age,
                             grade: currentChild.value.grade,
-                            gender: currentChild.value.gender
+                            gender: currentChild.value.gender,
+                            birthdate: childForm.value.birthdate || ''
                         };
                     } else {
                         childForm.value = { child_name: '', age: 10, grade: '', gender: '男' };
@@ -2118,6 +2149,7 @@
                     currentChild.value = JSON.parse(JSON.stringify(childForm.value));
                     // 强制保存到localStorage
                     localStorage.setItem('currentChild', JSON.stringify(currentChild.value));
+                    localStorage.setItem('childForm', JSON.stringify(childForm.value));
                     if (childAvatar.value) {
                         localStorage.setItem('childAvatar', childAvatar.value);
                     }
@@ -2470,7 +2502,7 @@
                 });
 
                 return {
-                    homeworkList, todayList, currentChild, childMood, childAvatar, showHomeworkSelector, showChildDialog, showMoodDialog, showHistoryDialog, historyList, toastMsg, toastClass, childForm,
+                    homeworkList, todayList, currentChild, childMood, childAvatar, showHomeworkSelector, showChildDialog, showMoodDialog, showHistoryDialog, historyList, sortedHistoryList, toastMsg, toastClass, childForm,
                     showAbnormalNoteDialog, abnormalNoteForm, currentEditItem, showDataDialog, showHelpDialog,
                     showResetDialog, resetType,
                     showSubjectEditDialog, showStatsDialog, statsSummary,
