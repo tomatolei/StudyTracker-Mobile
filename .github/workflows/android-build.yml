@@ -10,38 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1️⃣ Checkout
+    - uses: actions/checkout@v4
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    # Node
+    # 2️⃣ Node
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: 20
 
-    # Cordova
+    # 3️⃣ Install Cordova
     - name: Install Cordova
       run: npm install -g cordova
 
-    # Java
+    # 4️⃣ Java
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: 17
 
-    # ⭐关键：锁定 Gradle 8
+    # 5️⃣ Gradle
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
         gradle-version: 8.7
 
-    # Android SDK
+    # 6️⃣ Android SDK
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # 安装 SDK
     - name: Install Android SDK packages
       run: |
         yes | sdkmanager --licenses
@@ -49,26 +47,22 @@ jobs:
         sdkmanager "platforms;android-34"
         sdkmanager "build-tools;34.0.0"
 
-    # 创建 Cordova 项目
+    # 7️⃣ Create Cordova project
     - name: Create Cordova App
       run: |
         cordova create app com.leilei.studytracker 学习监督
         cd app
-
         rm -rf www/*
-        cp ../www/index.html www/index.html
-
+        cp ../www/* www/
         [ -f ../config.xml ] && cp ../config.xml .
         [ -d ../resources ] && cp -r ../resources .
-
         cordova platform add android@12
 
-    # 复制 keystore
+    # 8️⃣ Copy keystore
     - name: Copy Keystore
-      run: |
-        cp studytracker.keystore app/
+      run: cp ../studytracker.keystore app/
 
-    # 构建签名 APK
+    # 9️⃣ Build signed APK
     - name: Build Signed APK
       run: |
         cd app
@@ -79,9 +73,11 @@ jobs:
           --alias=${{ secrets.KEY_ALIAS }} \
           --password=${{ secrets.KEY_PASSWORD }}
 
-    # 上传 APK
-    - name: Upload APK
+    # 🔟 Upload APK / AAB
+    - name: Upload APK and AAB
       uses: actions/upload-artifact@v4
       with:
         name: StudyTracker-APK
-        path: app/platforms/android/app/build/outputs/apk/release/*.apk
+        path: |
+          app/platforms/android/app/build/outputs/apk/release/*.apk
+          app/platforms/android/app/build/outputs/bundle/release/*.aab
