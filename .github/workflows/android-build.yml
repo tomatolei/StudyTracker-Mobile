@@ -10,33 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ Checkout repo
     - uses: actions/checkout@v4
 
-    # 2️⃣ Setup Node.js
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: 20
 
-    # 3️⃣ Install Cordova globally
     - name: Install Cordova
       run: npm install -g cordova
 
-    # 4️⃣ Setup Java
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: 17
 
-    # 5️⃣ Setup Gradle
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
         gradle-version: 8.7
 
-    # 6️⃣ Setup Android SDK
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
@@ -47,19 +41,16 @@ jobs:
         sdkmanager "platforms;android-36"
         sdkmanager "build-tools;36.0.0"
 
-    # 7️⃣ Restore keystore from GitHub Secret
     - name: Restore Keystore
       run: |
         mkdir -p app
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/studytracker.keystore
 
-    # 8️⃣ Ensure Android platform exists
     - name: Add Android platform if missing
       run: |
         cd app
         cordova platform add android@12 || true
 
-    # 9️⃣ Build signed APK
     - name: Build Signed APK
       run: |
         cd app
@@ -69,17 +60,11 @@ jobs:
           --alias=${{ secrets.KEY_ALIAS }} \
           --password=${{ secrets.KEY_PASSWORD }}
 
-    # 🔟 List outputs for debug
-    - name: List APK / AAB outputs
-      run: |
-        cd app/platforms/android/app/build/outputs
-        find .
-
-    # 1️⃣1️⃣ Upload APK / AAB Artifact
     - name: Upload APK and AAB
       uses: actions/upload-artifact@v4
       with:
         name: StudyTracker-APK
+        # 自动匹配生成的 APK / AAB，无需 cd 到固定目录
         path: |
-          app/platforms/android/app/build/outputs/apk/release/app-release.apk
-          app/platforms/android/app/build/outputs/bundle/release/app-release.aab
+          app/platforms/android/app/build/outputs/**/*.apk
+          app/platforms/android/app/build/outputs/**/*.aab
