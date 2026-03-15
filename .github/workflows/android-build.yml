@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -15,18 +14,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-
     # Node
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: 20
 
-
-    # 安装 Cordova
+    # Cordova
     - name: Install Cordova
       run: npm install -g cordova
-
 
     # Java
     - name: Setup Java
@@ -35,20 +31,23 @@ jobs:
         distribution: temurin
         java-version: 17
 
+    # ⭐关键：锁定 Gradle 8
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 8.7
 
     # Android SDK
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-
-    # 安装 SDK 34
+    # 安装 SDK
     - name: Install Android SDK packages
       run: |
         yes | sdkmanager --licenses
         sdkmanager "platform-tools"
         sdkmanager "platforms;android-34"
         sdkmanager "build-tools;34.0.0"
-
 
     # 创建 Cordova 项目
     - name: Create Cordova App
@@ -64,14 +63,12 @@ jobs:
 
         cordova platform add android@12
 
-
     # 复制 keystore
     - name: Copy Keystore
       run: |
         cp studytracker.keystore app/
 
-
-    # 构建 Release APK
+    # 构建签名 APK
     - name: Build Signed APK
       run: |
         cd app
@@ -82,10 +79,9 @@ jobs:
           --alias=${{ secrets.KEY_ALIAS }} \
           --password=${{ secrets.KEY_PASSWORD }}
 
-
     # 上传 APK
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: 学习监督APK
+        name: StudyTracker-APK
         path: app/platforms/android/app/build/outputs/apk/release/*.apk
