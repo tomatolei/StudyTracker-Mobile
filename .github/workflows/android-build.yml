@@ -7,12 +7,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
 
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Setup Node
@@ -29,6 +28,12 @@ jobs:
         distribution: temurin
         java-version: 17
 
+    # ⭐关键步骤：锁定 Gradle 8
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 8.7
+
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
@@ -41,9 +46,8 @@ jobs:
         sdkmanager "platforms;android-34"
         sdkmanager "build-tools;34.0.0"
 
-    - name: Create Cordova project structure
-      run: |
-        cordova platform add android@12
+    - name: Add Android platform
+      run: cordova platform add android@12
 
     - name: Build APK
       run: cordova build android --release
