@@ -13,7 +13,7 @@ jobs:
     # 1️⃣ Checkout
     - uses: actions/checkout@v4
 
-    # 2️⃣ Node
+    # 2️⃣ Setup Node
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -23,14 +23,14 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova
 
-    # 4️⃣ Java
+    # 4️⃣ Setup Java
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: 17
 
-    # 5️⃣ Gradle
+    # 5️⃣ Setup Gradle
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
@@ -44,23 +44,25 @@ jobs:
       run: |
         yes | sdkmanager --licenses
         sdkmanager "platform-tools"
-        sdkmanager "platforms;android-34"
-        sdkmanager "build-tools;34.0.0"
+        sdkmanager "platforms;android-36"
+        sdkmanager "build-tools;36.0.0"
 
-    # 7️⃣ Create Cordova project
-    - name: Create Cordova App
+    # 7️⃣ Prepare Cordova app
+    - name: Prepare Cordova App
       run: |
         cordova create app com.leilei.studytracker 学习监督
         cd app
         rm -rf www/*
-        cp ../www/* www/
+        cp -r ../www/* www/
         [ -f ../config.xml ] && cp ../config.xml .
         [ -d ../resources ] && cp -r ../resources .
         cordova platform add android@12
 
-    # 8️⃣ Copy keystore
-    - name: Copy Keystore
-      run: cp ../studytracker.keystore app/
+    # 8️⃣ Restore keystore from Secret
+    - name: Restore Keystore
+      run: |
+        mkdir -p app
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/studytracker.keystore
 
     # 9️⃣ Build signed APK
     - name: Build Signed APK
