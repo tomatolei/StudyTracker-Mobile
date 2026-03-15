@@ -47,9 +47,10 @@ jobs:
         sdkmanager "platforms;android-36"
         sdkmanager "build-tools;36.0.0"
 
-    # 7️⃣ Restore keystore from Secret
+    # 7️⃣ Restore keystore from GitHub Secret
     - name: Restore Keystore
       run: |
+        mkdir -p app
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/studytracker.keystore
 
     # 8️⃣ Ensure Android platform exists
