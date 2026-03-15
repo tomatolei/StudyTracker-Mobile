@@ -11,7 +11,10 @@ platforms/
 
 # 构建产物
 build/
+bak/
 .bak/
+assets/
+resources/
 
 # ====================
 # Android/Gradle 忽略文件
