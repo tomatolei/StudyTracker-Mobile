@@ -38,11 +38,6 @@ jobs:
           cd app
           cordova platform add android@12
 
-      - name: Fix Gradle version
-        run: |
-          cd app/platforms/android
-          sed -i 's/gradle-.*/gradle-8.7-bin.zip/' gradle/wrapper/gradle-wrapper.properties
-
       - name: Build APK
         run: |
           cd app
