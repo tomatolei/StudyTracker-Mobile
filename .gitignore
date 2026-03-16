@@ -70,3 +70,6 @@ keystore.properties
 # 系统文件
 Thumbs.db
 .DS_Store
+
+# 本地脚本文件
+*.bat

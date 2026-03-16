@@ -213,7 +213,7 @@
                 <div class="homework-list" v-else>
                     <div class="homework-item" :class="item.status" v-for="item in todayList" :key="item.template_id">
                         <div class="homework-header">
-                            <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                            <span class="subject-tag" :style="{background: getSubjectColor(item.subject_name) + '20', color: getSubjectColor(item.subject_name), borderColor: getSubjectColor(item.subject_name) + '66'}">{{ item.subject_name }}</span>
                             <span class="homework-name">{{ item.task_name }}</span>
                             <span class="homework-status" :class="item.status">{{ item.status==='done'?'✅':'⏳' }}</span>
                         </div>
@@ -253,7 +253,7 @@
                         <div class="history-title">📜 完成历史</div>
                         <div class="history-item" v-for="item in todayList.filter(h => h.status === 'done')" :key="item.template_id" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px;">
                             <div style="display:flex;align-items:center;gap:8px;width:100%;">
-                                <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                                <span class="subject-tag" :style="{background: getSubjectColor(item.subject_name) + '20', color: getSubjectColor(item.subject_name), borderColor: getSubjectColor(item.subject_name) + '66'}">{{ item.subject_name }}</span>
                                 <span style="flex:1;">{{ item.task_name }}</span>
                                 <span style="font-weight:bold;color:#667eea;display:flex;align-items:center;">{{ item.duration }}分钟</span>
                             </div>
@@ -411,6 +411,13 @@
                 <div style="font-size:16px;font-weight:bold;margin-bottom:20px;color:#667eea;">📖 使用说明</div>
                 <button class="btn btn-secondary" @click="showHelpDialog = true" style="width:100%;font-size:14px;padding:12px;">📋 查看完整使用文档</button>
             </div>
+            
+            <!-- 版本信息 -->
+            <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
+                <div style="font-size:18px;font-weight:bold;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;margin-bottom:8px;">📚 学习监督</div>
+                <div style="font-size:14px;color:#666;margin-bottom:4px;">版本 v2.1.2</div>
+                <div style="font-size:12px;color:#999;">更新时间 2026年3月17日</div>
+            </div>
         </div>
         <!-- 设置页面结束 -->
         
@@ -448,12 +455,12 @@
                             <button @click="deleteDay(day.dateKey)" style="padding:4px 8px;font-size:11px;background:#fee;border:1px solid #fcc;border-radius:4px;color:#c00;cursor:pointer;">🗑️ 删除这天</button>
                         </div>
                         <div v-for="item in day.items" :key="item.template_id" style="display:flex;align-items:center;gap:8px;padding:8px;background:#f8f9fa;border-radius:6px;margin-bottom:6px;font-size:13px;">
-                            <span class="subject-tag" :class="'subject-tag-'+getSubjectClass(item.subject_name)">{{ item.subject_name }}</span>
+                            <span class="subject-tag" :style="{background: getSubjectColor(item.subject_name) + '20', color: getSubjectColor(item.subject_name), borderColor: getSubjectColor(item.subject_name) + '66'}">{{ item.subject_name }}</span>
                             <span style="flex:1;">{{ item.task_name }}</span>
                             <span style="font-weight:bold;color:#667eea;">{{ item.duration }}分钟</span>
                             <span v-if="item.expected_duration" :class="getCompareClass(item)" style="font-size:11px;">{{ getCompareText(item) }}</span>
                             <span v-if="item.is_abnormal" style="font-size:11px;color:#f56c6c;font-weight:bold;" title="异常">⚠️</span>
-                            <span v-if="item.abnormal_note" style="font-size:11px;color:#999;cursor:help;" :title="'异常理由：' + item.abnormal_note">📝</span>
+                            <span v-if="item.abnormal_note" style="font-size:11px;color:#999;cursor:pointer;" @click="showAbnormalNote(item)" title="点击查看/编辑异常理由">📝</span>
                             <button @click="deleteItem(day.dateKey, item.template_id)" style="padding:2px 6px;font-size:11px;background:#fff;border:1px solid #ddd;border-radius:4px;color:#999;cursor:pointer;" title="删除这条记录">✕</button>
                         </div>
                     </div>
@@ -636,9 +643,34 @@
         <!-- 科目编辑对话框 -->
         <div class="dialog-overlay" v-if="showSubjectEditDialog" @click="showSubjectEditDialog = false">
             <div class="dialog" style="max-width:400px;max-height:85vh;overflow-y:auto;" @click.stop>
-                <div class="dialog-title">✏️ 编辑{{ currentEditSubjectName }}作业</div>
+                <div class="dialog-title">✏️ 编辑{{ currentEditSubjectName }}</div>
+                
+                <!-- 仅自定义科目允许编辑基本信息 -->
+                <div v-if="!subjectList.find(s=>s.key === currentEditSubject)?.system" style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px solid #e9ecef;">
+                    <div class="form-item">
+                        <label>科目名称</label>
+                        <input v-model="currentEditSubjectName" placeholder="科目名称"/>
+                    </div>
+                    <div class="form-item">
+                        <label>图标 (点击下方选择或手动输入)</label>
+                        <input v-model="currentEditSubjectIcon" placeholder="例如：🔬、⚗️"/>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 8px; margin-top: 10px; max-width: 100%; overflow: hidden;">
+                            <button type="button" v-for="emoji in commonEmojis" :key="emoji" @click="currentEditSubjectIcon = emoji" style="font-size: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">{{ emoji }}</button>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label>主题颜色 <span style="font-size: 12px; color: #667eea; font-weight: normal;">(可点击换一个切换未使用的颜色)</span></label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="color" v-model="currentEditSubjectColor" style="height:50px;padding:2px; flex: 1;"/>
+                            <button type="button" @click="currentEditSubjectColor = getUnusedColor(currentEditSubjectColor)" style="padding: 0 12px; height: 50px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; cursor: pointer;">换一个</button>
+                        </div>
+                    </div>
+                </div>
                 
                 <div style="margin-bottom:15px;">
+                    <div class="form-item">
+                        <label>作业模板配置</label>
+                    </div>
                     <div style="display:grid;grid-template-columns:1fr 65px 40px;gap:6px;margin-bottom:10px;font-size:12px;font-weight:bold;color:#666;">
                         <div>作业名称</div>
                         <div style="text-align:center;">预计时间</div>
@@ -668,15 +700,30 @@
                     <input v-model="newSubjectForm.name" placeholder="例如：物理、化学"/>
                 </div>
                 <div class="form-item">
-                    <label>图标 (Emoji)</label>
+                    <label>图标 (点击下方选择或手动输入)</label>
                     <input v-model="newSubjectForm.icon" placeholder="例如：🔬、⚗️"/>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 8px; margin-top: 10px; max-width: 100%; overflow: hidden;">
+                        <button type="button" v-for="emoji in commonEmojis" :key="emoji" @click="newSubjectForm.icon = emoji" style="font-size: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">{{ emoji }}</button>
+                    </div>
                 </div>
                 <div class="form-item">
-                    <label>主题颜色</label>
-                    <input type="color" v-model="newSubjectForm.color" style="height:50px;padding:2px;"/>
+                    <label>已使用的科目颜色参考</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <div v-for="subject in subjectList" :key="subject.key" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #f8fafc; border-radius: 4px; font-size: 12px;">
+                            <div :style="{width: '12px', height: '12px', borderRadius: '50%', background: subject.color}"></div>
+                            <span>{{ subject.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-item">
+                    <label>主题颜色 <span style="font-size: 12px; color: #667eea; font-weight: normal;">(已自动推荐未使用的颜色)</span></label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" v-model="newSubjectForm.color" style="height:50px;padding:2px; flex: 1;"/>
+                        <button type="button" @click="newSubjectForm.color = getUnusedColor()" style="padding: 0 12px; height: 50px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; cursor: pointer;">换一个</button>
+                    </div>
                 </div>
                 <div class="dialog-buttons">
-                    <button class="btn btn-secondary" @click="showAddSubjectDialog = false">取消</button>
+                    <button class="btn btn-secondary" @click="showAddSubjectDialog = false; newSubjectForm = { name: '', icon: '📚', color: getUnusedColor() }">取消</button>
                     <button class="btn btn-primary" @click="saveNewSubject">保存</button>
                 </div>
             </div>
@@ -726,7 +773,7 @@
                 <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
                     <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e2e8f0;">
                         <div style="font-weight:bold;color:#667eea;font-size:16px;margin-bottom:5px;">📚 学习进度监督 - 完整使用文档</div>
-                        <div style="color:#64748b;font-size:12px;">版本：v2.0 | 最后更新：2026年3月</div>
+                        <div style="color:#64748b;font-size:12px;">版本：v2.1.2 | 最后更新：2026年3月17日</div>
                     </div>
 
                     <!-- 快速入门 -->
@@ -979,6 +1026,8 @@
                 const showStatsDialog = ref(false);
                 const currentEditSubject = ref('');
                 const currentEditSubjectName = ref('');
+                const currentEditSubjectIcon = ref('📚');
+                const currentEditSubjectColor = ref('#667eea');
                 const currentSubjectTasks = ref([]);
                 const statsSummary = ref({ totalHomework: 0, totalDuration: 0, avgHomework: 0, avgDuration: 0 });
                 let statsChartInstance = null;
@@ -986,8 +1035,32 @@
                 const currentTab = ref('home');
                 const showAddSubjectDialog = ref(false);
                 const newSubjectForm = ref({ name: '', icon: '📚', color: '#667eea' });
+                // 常用学科emoji列表
+                const commonEmojis = ref(['📚', '🔬', '⚗️', '🎨', '🎵', '⚽', '🏛️', '🌍', '💻', '🎭', '📈', '🎤', '✏️', '🔤', '📐', '⚛️', '🧪', '🧬', '🎹', '🏃', '🧘', '🗺️', '📜', '📊']);
+                // 预设好看的科目主题色
+                const presetColors = ref(['#e53935', '#1e88e5', '#fb8c00', '#9c27b0', '#43a047', '#f06292', '#7986cb', '#ffb300', '#8d6e63', '#00acc1', '#f4511e', '#7cb342', '#5c6bc0', '#d81b60', '#ff9800', '#8bc34a', '#3949ab', '#00bcd4', '#ffc107', '#9e9e9e', '#009688', '#ff5722', '#673ab7', '#2196f3', '#4caf50', '#ffeb3b', '#9c27b0', '#3f51b5', '#03a9f4', '#8bc34a', '#ffc107', '#ff5722']);
                 let homeworkPieInstance = null;
                 let durationPieInstance = null;
+                
+                // 获取未被使用的颜色，支持排除当前编辑的科目颜色
+                const getUnusedColor = (excludeColor = null) => {
+                    const usedColors = subjectList.value.map(s => s.color.toLowerCase());
+                    // 如果是编辑模式，排除当前科目的颜色（允许重新选）
+                    if (excludeColor) {
+                        const excludeIndex = usedColors.indexOf(excludeColor.toLowerCase());
+                        if (excludeIndex >= 0) {
+                            usedColors.splice(excludeIndex, 1);
+                        }
+                    }
+                    // 筛选出所有未使用的预设颜色
+                    const availableColors = presetColors.value.filter(color => !usedColors.includes(color.toLowerCase()));
+                    if (availableColors.length > 0) {
+                        // 随机返回一个未使用的颜色
+                        return availableColors[Math.floor(Math.random() * availableColors.length)];
+                    }
+                    // 如果预设颜色都用完了，返回随机颜色
+                    return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                };
                 
                 // 科目列表（包含系统和自定义）
                 const subjectList = ref([]);
@@ -995,8 +1068,7 @@
                     const defaultSubjects = [
                         { key: 'yuwen', name: '语文', icon: '📖', color: '#e53935', system: true },
                         { key: 'shuxue', name: '数学', icon: '📐', color: '#1e88e5', system: true },
-                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true },
-                        { key: 'wuli', name: '物理', icon: '⚛️', color: '#9c27b0', system: true }
+                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true }
                     ];
                     const savedCustomSubjects = localStorage.getItem('customSubjects');
                     let customSubjects = [];
@@ -1029,11 +1101,6 @@
                         { name: '练习册', duration: 25 },
                         { name: '试卷', duration: 45 },
                         { name: '默写背诵', duration: 20 }
-                    ],
-                    wuli: [
-                        { name: '练习册', duration: 30 },
-                        { name: '试卷', duration: 50 },
-                        { name: '实验报告', duration: 25 }
                     ]
                 });
                 
@@ -1187,6 +1254,12 @@
                     if (subject === '英语') return 'yingyu';
                     return '';
                 };
+                
+                // 根据科目名称获取对应颜色
+                const getSubjectColor = (subjectName) => {
+                    const subject = subjectList.value.find(s => s.name === subjectName);
+                    return subject ? subject.color : '#94a3b8';
+                };
 
                 const getMoodEmoji = () => {
                     const moods = { 'happy': '😃', 'normal': '😐', 'sad': '😔', 'angry': '😤' };
@@ -1329,7 +1402,7 @@
                     return stats.sort((a, b) => b.duration - a.duration);
                 });
 
-                const loadData = async () => {
+                const loadData = () => {
                     // 根据科目配置生成作业模板
                     const generateTemplates = () => {
                         const templates = [];
@@ -1342,7 +1415,8 @@
                                     template_id: id++,
                                     subject_name: subject.name,
                                     task_name: task.name,
-                                    expected_duration: task.duration
+                                    expected_duration: task.duration,
+                                    selected: false
                                 });
                             });
                         });
@@ -1352,23 +1426,6 @@
                     
                     // 使用科目配置生成作业列表
                     homeworkList.value = generateTemplates();
-                    
-                    // 可选：如果后端可用，尝试从 API 加载（带超时控制）
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 1000);
-                        const templatesRes = await fetch(API_BASE + '/templates', { 
-                            signal: controller.signal,
-                            mode: 'no-cors'
-                        });
-                        clearTimeout(timeoutId);
-                        const templates = await templatesRes.json();
-                        if (templates && templates.length > 0) {
-                            homeworkList.value = templates.map(t => ({ ...t, selected: false }));
-                        }
-                    } catch (e) {
-                        // 静默失败，使用科目配置数据，不输出错误
-                    }
                 };
 
                 const assignHomework = () => {
@@ -1733,13 +1790,23 @@
                                 localStorage.setItem('homeworkHistory', JSON.stringify(data.homeworkHistory));
                             }
                             if (data.subjectConfig) {
+                                // 移除旧数据中的物理科目配置
+                                delete data.subjectConfig.wuli;
                                 subjectConfig.value = data.subjectConfig;
-                                localStorage.setItem('subjectConfig', JSON.stringify(data.subjectConfig));
+                                localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
                             }
                             if (data.customSubjects) {
-                                localStorage.setItem('customSubjects', data.customSubjects);
+                                try {
+                                    let customSubjects = JSON.parse(data.customSubjects);
+                                    localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+                                } catch(e) {
+                                    console.error('自定义科目解析失败', e);
+                                }
                             }
-                            showToast('数据已恢复', 'success');
+                            // 重新加载科目列表和数据，确保物理科目被移除
+                            loadSubjectList();
+                            loadData();
+                            showToast('数据已恢复，已自动清理冗余物理科目', 'success');
                             showDataDialog.value = false;
                         } catch (err) {
                             showToast('文件格式错误', 'error');
@@ -1968,11 +2035,13 @@
                 };
                 
                 // 编辑科目
-                const editSubject = (subject) => {
-                    currentEditSubject.value = subject;
-                    const names = { yuwen: '语文', shuxue: '数学', yingyu: '英语' };
-                    currentEditSubjectName.value = names[subject];
-                    currentSubjectTasks.value = JSON.parse(JSON.stringify(subjectConfig.value[subject] || []));
+                const editSubject = (subjectKey) => {
+                    currentEditSubject.value = subjectKey;
+                    const subject = subjectList.value.find(s => s.key === subjectKey);
+                    currentEditSubjectName.value = subject ? subject.name : '科目';
+                    currentEditSubjectIcon.value = subject ? subject.icon : '📚';
+                    currentEditSubjectColor.value = subject ? subject.color : '#667eea';
+                    currentSubjectTasks.value = JSON.parse(JSON.stringify(subjectConfig.value[subjectKey] || []));
                     showSubjectEditDialog.value = true;
                 };
                 
@@ -1992,6 +2061,35 @@
                     currentSubjectTasks.value = currentSubjectTasks.value.filter(t => t.name.trim());
                     subjectConfig.value[currentEditSubject.value] = currentSubjectTasks.value;
                     localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    
+                    // 如果是自定义科目，更新名称、图标、颜色
+                    const subject = subjectList.value.find(s => s.key === currentEditSubject.value);
+                    if (subject && !subject.system) {
+                        const savedCustomSubjects = localStorage.getItem('customSubjects');
+                        let customSubjects = [];
+                        if (savedCustomSubjects) {
+                            try {
+                                customSubjects = JSON.parse(savedCustomSubjects);
+                            } catch (e) {}
+                        }
+                        const index = customSubjects.findIndex(s => s.key === currentEditSubject.value);
+                        if (index >= 0) {
+                            customSubjects[index].name = currentEditSubjectName.value.trim();
+                            customSubjects[index].icon = currentEditSubjectIcon.value;
+                            customSubjects[index].color = currentEditSubjectColor.value;
+                            localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+                            loadSubjectList(); // 重新加载科目列表
+                        }
+                    }
+                    
+                    loadData(); // 重新加载作业模板，实时生效
+                    // 如果当前在报告页，重新渲染图表更新颜色
+                    if (currentTab.value === 'report') {
+                        setTimeout(() => {
+                            renderTrendChart();
+                            renderPieCharts();
+                        }, 100);
+                    }
                     showToast('设置已保存', 'success');
                     showSubjectEditDialog.value = false;
                 };
@@ -1999,7 +2097,7 @@
                 // 添加新科目
                 const addNewSubject = () => {
                     showAddSubjectDialog.value = true;
-                    newSubjectForm.value = { name: '', icon: '📚', color: '#667eea' };
+                    newSubjectForm.value = { name: '', icon: '📚', color: getUnusedColor() };
                 };
 
                 // 保存新科目
@@ -2034,7 +2132,16 @@
                     localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
                     loadSubjectList();
                     loadData();
+                    // 如果当前在报告页，重新渲染图表更新颜色
+                    if (currentTab.value === 'report') {
+                        setTimeout(() => {
+                            renderTrendChart();
+                            renderPieCharts();
+                        }, 100);
+                    }
                     showAddSubjectDialog.value = false;
+                    // 重置表单，避免下次打开残留上次内容
+                    newSubjectForm = { name: '', icon: '📚', color: getUnusedColor() };
                     showToast('科目已添加', 'success');
                 };
 
@@ -2058,6 +2165,13 @@
                     localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
                     loadSubjectList();
                     loadData();
+                    // 如果当前在报告页，重新渲染图表更新颜色
+                    if (currentTab.value === 'report') {
+                        setTimeout(() => {
+                            renderTrendChart();
+                            renderPieCharts();
+                        }, 100);
+                    }
                     showToast('科目已删除', 'success');
                 };
                 
@@ -2108,13 +2222,38 @@
                         localStorage.removeItem('todayHomework');
                         showToast('当天作业已清空', 'success');
                     } else if (resetType.value === 'all') {
-                        // 重置全部
+                        // 重置全部：清空数据+恢复默认科目
                         historyList.value = [];
                         todayList.value = [];
                         homeworkList.value.forEach(h => h.selected = false);
                         localStorage.removeItem('homeworkHistory');
                         localStorage.removeItem('todayHomework');
-                        showToast('全部数据已重置', 'success');
+                        // 恢复默认科目
+                        localStorage.removeItem('customSubjects');
+                        localStorage.removeItem('subjectConfig');
+                        // 重新加载数据
+                        subjectConfig.value = {
+                            yuwen: [
+                                { name: '背诵', duration: 20 },
+                                { name: '预习', duration: 15 },
+                                { name: '默写', duration: 20 },
+                                { name: '练习册', duration: 30 },
+                                { name: '作文', duration: 40 }
+                            ],
+                            shuxue: [
+                                { name: '练习册', duration: 30 },
+                                { name: '试卷', duration: 60 },
+                                { name: '错题整理', duration: 30 }
+                            ],
+                            yingyu: [
+                                { name: '练习册', duration: 25 },
+                                { name: '试卷', duration: 45 },
+                                { name: '默写背诵', duration: 20 }
+                            ]
+                        };
+                        loadSubjectList();
+                        loadData();
+                        showToast('全部数据已重置，已恢复默认科目', 'success');
                     }
                     showResetDialog.value = false;
                     showDataDialog.value = false;
@@ -2506,12 +2645,12 @@
                     showAbnormalNoteDialog, abnormalNoteForm, currentEditItem, showDataDialog, showHelpDialog,
                     showResetDialog, resetType,
                     showSubjectEditDialog, showStatsDialog, statsSummary,
-                    currentEditSubject, currentEditSubjectName, currentSubjectTasks, subjectConfig,
+                    currentEditSubject, currentEditSubjectName, currentEditSubjectIcon, currentEditSubjectColor, currentSubjectTasks, subjectConfig,
                     currentTab, studyDays, weekStats, subjectStats, subjectHomeworkRank, subjectDurationRank,
                     yuwenList, shuxueList, yingyuList, selectedCount, totalCount, doneCount, doingCount, totalDuration, currentDate,
-                    getSubjectClass, getMoodEmoji, saveMood, getCompareClass, getCompareText, getAverageDuration, isAbnormal, getAbnormalText, showAbnormalNote, saveAbnormalNote,
+                    getSubjectClass, getSubjectColor, getMoodEmoji, saveMood, getCompareClass, getCompareText, getAverageDuration, isAbnormal, getAbnormalText, showAbnormalNote, saveAbnormalNote,
                     getSubjectSummary, editSubject, addTask, removeTask, saveSubjectSettings, editChildFromSettings, resetToDefaultTemplates, triggerAvatarUpload,
-                    showStatsChart, renderTrendChart, renderPieCharts, calculateAgeAndGrade, addNewSubject, saveNewSubject, deleteSubject, exportExcel, subjectList, showAddSubjectDialog, newSubjectForm,
+                    showStatsChart, renderTrendChart, renderPieCharts, calculateAgeAndGrade, addNewSubject, saveNewSubject, deleteSubject, exportExcel, subjectList, showAddSubjectDialog, newSubjectForm, commonEmojis, getUnusedColor,
                     exportData, importData,
                     showResetConfirm, confirmReset,
                     loadData, assignHomework, resetHomework, submit, createChild, editChild, setDuration, syncDuration, deleteItem, deleteDay

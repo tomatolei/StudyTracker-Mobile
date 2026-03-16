@@ -27,7 +27,7 @@ git add .
 
 REM 提交
 echo [3/5] 提交更改...
-git commit -m "学习监督 APP - 更新源码"
+git commit -m "v2.1.2 upate"
 
 REM 确保分支是 master
 echo [4/5] 设置分支...
@@ -41,8 +41,6 @@ if %errorlevel% neq 0 (
 
 REM 强制推送到 GitHub
 echo [5/5] 推送到 GitHub...
-echo.
-echo ??  即将强制覆盖 GitHub 上的所有文件...
 echo.
 git push -f origin master
 

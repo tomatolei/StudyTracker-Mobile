@@ -27,7 +27,7 @@ git add .
 
 REM Commit
 echo [3/5] Commit changes...
-git commit -m "Update source code"
+git commit -m "v2.1.2 upate"
 
 REM Set branch to master
 echo [4/5] Set branch...
