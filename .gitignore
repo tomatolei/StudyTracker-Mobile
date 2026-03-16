@@ -42,6 +42,9 @@ local.properties
 *.keystore.base64
 keystore.properties
 
+# GitHub令牌（不要上传）
+.git_token
+
 # ====================
 # 导出文件
 # ====================
@@ -73,3 +76,4 @@ Thumbs.db
 
 # 本地脚本文件
 *.bat
+upload-to-github.bat
