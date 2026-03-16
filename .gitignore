@@ -77,3 +77,4 @@ Thumbs.db
 # 本地脚本文件
 *.bat
 upload-to-github.bat
+bak
