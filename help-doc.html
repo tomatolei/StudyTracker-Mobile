@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学习进度监督 - 完整使用文档</title>
+    <title>学习监督 - 使用文档</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
             background: linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%);
             padding: 20px;
             line-height: 1.8;
-            color: #333;
+            color: #334155;
             min-height: 100vh;
         }
         .container {
-            max-width: 800px;
+            max-width: 860px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
+            background: #fff;
+            border-radius: 22px;
             padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
             border-bottom: 2px solid #e2e8f0;
         }
         .header h1 {
-            color: #667eea;
             font-size: 28px;
             margin-bottom: 10px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -37,80 +36,34 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .header p {
-            color: #64748b;
-            font-size: 14px;
-        }
+        .header p { color: #64748b; font-size: 14px; }
         .section {
-            margin-bottom: 25px;
-            padding: 20px;
-            border-radius: 12px;
+            margin-bottom: 22px;
+            padding: 18px 20px;
+            border-radius: 14px;
         }
-        .section.primary {
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-            border-left: 4px solid #667eea;
-        }
-        .section.gray {
-            background: #f8fafc;
-            border-left: 4px solid #94a3b8;
-        }
-        .section.blue {
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-        }
-        .section.green {
-            background: #f0fdf4;
-            border-left: 4px solid #22c55e;
-        }
-        .section.yellow {
-            background: #fffbeb;
-            border-left: 4px solid #f59e0b;
-        }
-        .section h2 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .section.primary h2 { color: #667eea; }
-        .section.gray h2 { color: #334155; }
-        .section.blue h2 { color: #1e40af; }
-        .section.green h2 { color: #166534; }
-        .section.yellow h2 { color: #854d0e; }
-        .section h3 {
-            font-size: 16px;
-            margin: 15px 0 8px 0;
-            color: #1e293b;
-            font-weight: bold;
-        }
-        .section p, .section ul {
-            margin-left: 12px;
-            font-size: 14px;
-            color: #334155;
-        }
-        .section ul {
-            padding-left: 20px;
-        }
-        .section li {
-            margin-bottom: 6px;
-        }
+        .primary { background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-left: 4px solid #667eea; }
+        .gray { background: #f8fafc; border-left: 4px solid #94a3b8; }
+        .blue { background: #eff6ff; border-left: 4px solid #3b82f6; }
+        .green { background: #f0fdf4; border-left: 4px solid #22c55e; }
+        .yellow { background: #fffbeb; border-left: 4px solid #f59e0b; }
+        h2 { font-size: 20px; margin-bottom: 12px; }
+        h3 { font-size: 16px; margin: 12px 0 8px; color: #1e293b; }
+        p, li { font-size: 14px; }
+        ul, ol { margin-left: 22px; }
+        li { margin-bottom: 6px; }
         code {
             background: #1e293b;
             color: #e2e8f0;
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: 'Consolas', monospace;
+            font-family: Consolas, monospace;
             font-size: 13px;
-        }
-        .highlight {
-            background: #fef3c7;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: bold;
         }
         .footer {
             text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 28px;
+            padding-top: 16px;
             border-top: 2px solid #e2e8f0;
             color: #94a3b8;
             font-size: 12px;
@@ -125,221 +78,87 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 学习进度监督 - 完整使用文档</h1>
-            <p>版本：v2.1.3 | 最后更新：2026 年 3 月 20 日</p>
+            <h1>📚 学习监督 - 使用文档</h1>
+            <p>版本：v2.1.4 | 最后更新：2026 年 3 月 20 日</p>
         </div>
 
         <div class="section primary">
-            <h2>🚀 快速入门</h2>
+            <h2>🚀 快速上手</h2>
             <ol>
-                <li>点击「设置」→「✏️ 编辑孩子信息」，填写孩子出生日期、姓名、性别，系统会自动计算年龄和年级（可手动调整）</li>
-                <li>（可选）进入科目配置，添加/编辑需要的科目和对应作业模板</li>
-                <li>回到首页，点击右上角「+」按钮，勾选今日要完成的作业，点击「布置作业」</li>
-                <li>孩子完成每一项作业后，使用滑动条或快捷按钮快速输入用时，点击「提交」</li>
-                <li>切换到「报告」页面，查看详细的学习统计、趋势分析和科目排行</li>
+                <li>进入「设置」→「编辑孩子信息」，填写姓名、出生日期、性别并上传头像。</li>
+                <li>系统会自动计算年龄，并给出建议年级；你也可以手动点选实际年级。</li>
+                <li>按需添加/编辑科目和作业模板。</li>
+                <li>回到首页，点击「+」选择今日作业并布置。</li>
+                <li>孩子完成后，直接用快捷按钮或输入框录入用时。</li>
+                <li>到「报告」页查看趋势、占比和本周复盘结论。</li>
             </ol>
         </div>
 
         <div class="section gray">
-            <h2>🏠 核心功能详解</h2>
-            
-            <h3>【首页功能】</h3>
+            <h2>🏠 现在能做什么</h2>
+            <h3>首页</h3>
             <ul>
-                <li><strong>孩子信息头</strong>：显示孩子姓名、年级、实时年龄、累计学习天数，点击头像可快速编辑信息</li>
-                <li><strong>今日心情记录</strong>：点击右侧表情图标选择当日心情，长期记录可观察学习状态波动</li>
-                <li><strong>实时统计面板</strong>：实时更新总作业数、已完成/进行中数量、累计学习时长</li>
-                <li><strong>作业列表</strong>：显示当日布置的所有作业，使用滑动条/快捷按钮输入用时提交，异常用时会自动提示填写备注</li>
-                <li><strong>当日完成历史</strong>：展示当天所有已完成作业的详细信息，包含用时对比、异常标记等</li>
+                <li>显示孩子信息、今日心情、累计学习天数。</li>
+                <li>显示今日概览、快速操作、提醒信息、异常提醒。</li>
+                <li>支持快捷录入：预期、平均、+15、+30、回车提交。</li>
+                <li>显示当天完成历史，便于随时回看。</li>
             </ul>
-
-            <h3>【作业管理】</h3>
+            <h3>报告页</h3>
             <ul>
-                <li><strong>自定义作业模板</strong>：每个科目可自定义作业名称和预计完成时间，支持无限添加</li>
-                <li><strong>批量布置作业</strong>：一键勾选当天需要完成的作业，快速布置</li>
-                <li><strong>异常检测机制</strong>：提交作业时自动对比历史平均用时，偏离 30% 以上提示填写异常理由</li>
-                <li><strong>全局历史查询</strong>：支持查看所有历史完成记录，按日期分类展示</li>
+                <li>本周学习摘要</li>
+                <li>本周复盘结论</li>
+                <li>最近 7 天趋势图</li>
+                <li>作业数量 / 学习时长占比图</li>
+                <li>学科分布统计</li>
             </ul>
-
-            <h3>【报告分析】</h3>
+            <h3>设置页</h3>
             <ul>
-                <li><strong>本周学习摘要</strong>：统计近 7 天总作业量、总学习时长、有效学习天数、日均分钟、日均作业数等核心指标</li>
-                <li><strong>7 天学习趋势图</strong>：双柱状图直观展示每日作业数量和学习时长变化趋势，支持 hover 查看详细数值</li>
-                <li><strong>作业数量占比甜甜圈图</strong>：直观展示各科目作业数量占总作业量的百分比，右上角显示总作业数，图例自动按 2 个一行排列，显示科目名称、数量和占比</li>
-                <li><strong>学习时长占比甜甜圈图</strong>：直观展示各科目学习时长占总时长的百分比，右上角显示总学习时长，图例自动按 2 个一行排列，显示科目名称、时长和占比</li>
-                <li><strong>学科分布</strong>：卡片式展示各科目作业总数量，颜色和科目自定义主题色统一，新增科目自动加入显示（每行 4 个）</li>
-            </ul>
-
-            <h3>【设置中心】</h3>
-            <ul>
-                <li><strong>自定义科目</strong>：支持无限添加科目，可自定义名称、Emoji 图标、主题颜色，不需要的科目可删除，自动适配所有功能页面</li>
-                <li><strong>作业模板配置</strong>：每个科目单独配置作业名称和预计完成时间，修改后即时生效</li>
-                <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）</li>
-                <li><strong>数据安全</strong>：支持一键备份/恢复数据、真实导出 Excel 统计报表，并自动保存到本地存储，多种重置选项满足不同需求</li>
+                <li>编辑孩子信息</li>
+                <li>添加 / 编辑 / 删除自定义科目</li>
+                <li>配置每个科目的作业模板</li>
+                <li>备份、恢复、导出 Excel、清空数据</li>
             </ul>
         </div>
 
         <div class="section blue">
-            <h2>⚙️ 核心算法说明</h2>
-            
-            <h3>1. 年龄自动计算算法</h3>
-            <p>
-                计算公式：<code>当前年份 - 出生年份 - (当前月份 &lt; 出生月份 || (当前月份 == 出生月份 &amp;&amp; 当前日期 &lt; 出生日期) ? 1 : 0)</code><br>
-                特性：自动考虑生日是否已过，每年生日当天自动增长年龄，无需手动更新
-            </p>
-
-            <h3>2. 年级自动匹配算法</h3>
-            <p>
-                匹配规则（国内标准入学年龄）：<br>
-                3 岁→小班 / 4 岁→中班 / 5 岁→大班 / 6 岁→一年级 / 7 岁→二年级 / 8 岁→三年级 / 9 岁→四年级 / 10 岁→五年级 / 11 岁→六年级 / 12 岁→初一 / 13 岁→初二 / 14 岁→初三 / 15 岁→高一 / 16 岁→高二 / 17 岁→高三<br>
-                特性：支持手动调整，手动调整后优先级高于自动计算结果
-            </p>
-
-            <h3>3. 异常用时检测算法</h3>
-            <p>
-                判断逻辑：<code>|当前用时 - 历史平均用时 | / 历史平均用时 &gt; 0.3</code>（偏离 30% 以上判定为异常）<br>
-                特性：仅在该作业有至少 1 次历史完成记录时触发，首次完成不检测，异常结果可填写备注说明原因
-            </p>
-
-            <h3>4. 统计排名算法</h3>
-            <p>
-                统计范围：所有历史完成记录，按科目维度聚合<br>
-                排名规则：作业数量/学习时长从高到低排序，进度条按当前最大值的百分比计算<br>
-                特性：新增科目自动加入统计，无完成记录显示为 0
-            </p>
+            <h2>📦 数据备份与恢复</h2>
+            <h3>备份数据</h3>
+            <p>点击设置中的备份按钮后，系统会真实保存 <code>.json</code> 文件。安卓环境优先写入 <code>Download/Downloads</code>，失败时自动回退到应用可访问目录。</p>
+            <h3>恢复数据</h3>
+            <p>恢复流程改成了：<strong>先选文件 → 先预览 → 再确认恢复</strong>。支持两种模式：</p>
+            <ul>
+                <li><strong>覆盖恢复</strong>：用备份内容替换当前数据</li>
+                <li><strong>合并恢复</strong>：尽量保留现有数据并合并历史记录</li>
+            </ul>
+            <h3>Excel 导出</h3>
+            <p>导出为真实 <code>.xlsx</code> 文件，包含：基本信息、每日汇总、科目统计、作业明细 4 个工作表。</p>
         </div>
 
         <div class="section green">
-            <h2>✨ 高级功能使用指南</h2>
-            
-            <h3>【自定义科目配置】</h3>
-            <p>
-                操作步骤：<br>
-                1. 进入设置→科目作业配置，点击右上角「+ 添加科目」<br>
-                2. 填写科目名称（如：物理、化学）、选择 Emoji 图标、挑选主题颜色<br>
-                3. 保存后自动生成默认作业模板（练习、试卷），可进入编辑修改作业名称和预计时间<br>
-                4. 新科目会自动出现在作业选择、报告统计等所有位置
-            </p>
-
-            <h3>【年级手动调整】</h3>
-            <p>
-                适用场景：上学早/晚、跳级、留级等不符合标准入学年龄的情况<br>
-                操作：编辑孩子信息时，在「手动调整年级」下拉框直接选择实际年级即可，保存后会一直生效，不会被自动计算结果覆盖
-            </p>
-
-            <h3>【数据备份与迁移】</h3>
-            <p>
-                备份：点击设置→备份数据，系统会直接生成 `学习进度备份_日期.json` 并自动保存到本地存储；安卓优先写入 `Download/Downloads`，如系统限制则回退到应用可访问目录<br>
-                迁移：将备份文件发送到新设备，点击设置→恢复数据，选择该文件即可完整恢复所有数据（孩子信息、作业记录、历史统计等）
-            </p>
-
-            <h3>【年龄与年级自动计算】</h3>
-            <p>
-                功能特性：<br>
-                • 输入孩子出生日期后，系统自动计算实岁，生日当天自动增长年龄，无需手动更新<br>
-                • 自动按照国内标准入学年龄匹配对应年级，3 岁小班到 17 岁高三全覆盖<br>
-                • 支持手动调整年级，适配上学早/晚、跳级、留级等特殊情况，手动调整后优先级最高
-            </p>
-
-            <h3>【自定义科目管理】</h3>
-            <p>
-                功能特性：<br>
-                • 支持无限添加科目，满足小学/初中/高中全阶段需求<br>
-                • 每个科目可自定义名称、专属 Emoji 图标、主题颜色，完全个性化<br>
-                • 新增科目自动同步到作业选择、报告统计、学科分布等所有页面，无需额外配置<br>
-                • 不需要的科目可删除，历史记录不受影响
-            </p>
-
-            <h3>【Excel 统计导出】</h3>
-            <p>
-                导出内容：包含 4 个结构化工作表<br>
-                • 基本信息表：孩子姓名、年级、年龄、累计学习天数等基础信息<br>
-                • 每日汇总表：按日期统计每天的作业数量和总学习时长<br>
-                • 科目统计表：各科目总作业数量、总学习时长、平均单次时长<br>
-                • 作业明细表：所有历史作业的完整记录，包含科目、作业名称、用时、预计用时、异常标记、备注等全部信息<br>
-                操作：点击设置→「📊 导出学习统计（Excel）」即可，系统会生成真实 `.xlsx` 文件；安卓优先自动保存到 `Download/Downloads`，如系统限制则回退到应用可访问目录，文件名按「孩子姓名_学习统计_日期」自动命名
-            </p>
-
-            <h3>【报告可视化优化】</h3>
-            <p>
-                功能特性：<br>
-                • 作业数量和学习时长采用甜甜圈图展示，直观显示各科目占比百分比<br>
-                • 图例自动按 2 个一行排列，手机端显示更清晰，包含科目名称、数值、占比完整信息<br>
-                • 右上角显示总作业数/总时长，数据一目了然<br>
-                • 支持悬停/点击突出显示区块，查看详细数据
-            </p>
-
-            <h3>【快捷时间输入】</h3>
-            <p>
-                功能特性：<br>
-                • 滑动条快速调节：拖动滑块快速设置用时，步长 5 分钟，方便微调<br>
-                • 快捷按钮一键设置：点击「预期」快速填入预期时间，点击「平均」快速填入历史平均用时<br>
-                • 常用时间按钮：15/30/45/60 分钟常用时间一键选择，无需手动输入<br>
-                • 数字输入框：支持直接输入精确数值，与滑动条实时同步<br>
-                使用技巧：优先点击「平均」或「预期」按钮，然后直接点提交，最快 2 步完成作业提交
-            </p>
+            <h2>⚙️ 核心规则</h2>
+            <h3>年龄自动计算</h3>
+            <p><code>当前年份 - 出生年份 - (生日未到 ? 1 : 0)</code></p>
+            <h3>年级选择</h3>
+            <p>系统会根据年龄自动给出建议年级；手机端已改成<strong>紧凑按钮网格</strong>，不再使用又高又占屏的系统下拉列表。</p>
+            <h3>异常检测</h3>
+            <p>当实际用时偏离历史平均值 <strong>30%</strong> 以上时，会标记为异常并可填写备注。</p>
         </div>
 
         <div class="section yellow">
-            <h2>❓ 常见问题</h2>
-            
+            <h2>🆕 v2.1.4 更新重点</h2>
             <ul>
-                <li>
-                    <strong>Q：年龄和年级为什么和实际不符？</strong><br>
-                    A：系统默认按国内标准入学年龄计算，如果上学时间特殊，可以在编辑孩子信息时手动选择实际年级，手动选择后优先级最高，不会被自动计算覆盖。
-                </li>
-                <li>
-                    <strong>Q：新增的科目为什么在作业选择里看不到？</strong><br>
-                    A：新增科目后会自动生成默认作业模板（练习、试卷），如果没看到可以进入科目编辑检查是否有作业，至少需要一个作业才会出现在选择列表里。
-                </li>
-                <li>
-                    <strong>Q：删除科目会丢失历史数据吗？</strong><br>
-                    A：不会。删除科目只会删除该科目的作业模板，已经完成的历史记录会保留，报告统计里也会显示该科目的历史数据。
-                </li>
-                <li>
-                    <strong>Q：导出的 Excel 文件在哪里？</strong><br>
-                    A：安卓手机会优先保存到「内部存储→Download / Downloads」目录；如果系统限制该目录，则会自动回退到应用可访问目录。浏览器环境保存到浏览器默认下载目录，文件名格式为「孩子姓名_学习统计_日期.xlsx」。
-                </li>
-                <li>
-                    <strong>Q：为什么有些作业提交时不提示异常？</strong><br>
-                    A：异常检测需要该作业至少有 1 次历史完成记录，首次完成时没有参考数据，不会触发异常提示。
-                </li>
-                <li>
-                    <strong>Q：备份的文件在手机哪里找？</strong><br>
-                    A：安卓手机会优先保存到「内部存储→Download / Downloads」目录；如果系统限制该目录，则会自动回退到应用可访问目录。浏览器环境会保存到浏览器默认下载目录，文件名格式为「学习进度备份_日期.json」。
-                </li>
-                <li>
-                    <strong>Q：换手机了怎么转移数据？</strong><br>
-                    A：旧手机点击备份数据，把备份文件通过微信/QQ/蓝牙发送到新手机，新手机点击恢复数据选择该文件即可，所有数据会完整恢复。
-                </li>
-                <li>
-                    <strong>Q：如何快速输入作业用时？</strong><br>
-                    A：有三种快捷方式：①点击「预期」或「平均」按钮一键填入 ②点击 15/30/45/60 常用时间按钮 ③拖动滑动条快速调节。最快 2 步完成提交。
-                </li>
+                <li>文档与当前真实功能重新同步</li>
+                <li>版本统一升级到 <strong>2.1.4 / 214</strong></li>
+                <li>首页、设置页、报告页继续紧凑化</li>
+                <li>添加新科目弹窗继续压缩</li>
+                <li>孩子信息弹窗继续压缩</li>
+                <li>年级选择改成按钮网格，更适合手机端</li>
+                <li>完成历史区域与历史弹窗重新整理，减少杂乱感</li>
             </ul>
-        </div>
-
-        <div class="section green">
-            <h2>💡 温馨提示</h2>
-            <ul>
-                <li>所有数据完全保存在本地，不会上传到任何服务器，隐私安全有保障</li>
-                <li>卸载应用或清除浏览器缓存会丢失所有数据，建议每月至少备份一次</li>
-                <li>头像会自动压缩到 200px 宽度，不会占用太多存储空间，最大支持 5MB 图片</li>
-                <li>异常记录长期保存，可以定期查看异常备注，及时发现孩子学习中的问题（比如某科目突然用时变长可能是知识点没掌握）</li>
-                <li>建议每周查看一次报告页面，根据学习情况调整作业量和科目侧重，制定更科学的学习计划</li>
-            </ul>
-        </div>
-
-        <div class="section gray">
-            <h2>👨‍ 关于作者</h2>
-            <div style="margin-left:12px;font-size:14px;line-height:2.2;">
-                <strong>开发者：</strong>累累<br/>
-                <strong>邮箱：</strong><a href="mailto:823921@qq.com" style="color:#667eea;text-decoration:none;">823921@qq.com</a><br/>
-                <strong>开源地址：</strong><a href="https://github.com/tomatolei/StudyTracker-Mobile" target="_blank" style="color:#667eea;text-decoration:none;">https://github.com/tomatolei/StudyTracker-Mobile</a>
-            </div>
         </div>
 
         <div class="footer">
-            <p>© 2026 学习进度监督 | 开发者：累累 | 纯本地离线应用 | 开源免费</p>
+            学习监督 · 本地优先 · 适合手机端长期使用
         </div>
     </div>
 </body>

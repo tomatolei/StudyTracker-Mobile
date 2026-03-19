@@ -1,8 +1,8 @@
 name: Build Signed Android APK
 
 env:
-  APP_VERSION: 2.1.3
-  APP_VERSION_CODE: 213
+  APP_VERSION: 2.1.4
+  APP_VERSION_CODE: 214
 
 on:
   workflow_dispatch:

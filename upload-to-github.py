@@ -16,7 +16,6 @@ TRACKED_PATHS = [
     "package.json",
     "package-lock.json",
     "upload-to-github.bat",
-    "upload-to-github.ps1",
     "upload-to-github.py",
     "www",
     "更新日志-本次修复.md",
