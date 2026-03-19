@@ -33,9 +33,9 @@
   - 📝 每个科目可配置多个作业模板和预计时间
 - **孩子信息**：随时修改孩子基本信息、出生日期和头像
 - **数据管理**：
-  - 备份数据到本地（JSON 格式）
+  - 备份数据到本地（JSON 格式，自动保存文件）
   - 从备份恢复数据
-  - 📊 导出 Excel 统计报表（4 个工作表：基本信息、每日汇总、科目统计、作业明细）
+  - 📊 导出 Excel 统计报表（真实 `.xlsx` 文件，4 个工作表：基本信息、每日汇总、科目统计、作业明细）
   - 清空历史/当天/全部数据
 - **使用说明**：内置完整的功能使用文档和核心算法说明
 
@@ -65,7 +65,7 @@
    ├── config.xml              # Cordova 配置（必需）
    ├── .github/
    │   └── workflows/
-   │       └── build-apk.yml   # 打包流程（必需）
+   │       └── android-build.yml   # 打包流程（必需）
    ├── resources/
    │   └── android/
    │       └── icon/
@@ -80,9 +80,11 @@
 
 2. **运行打包**
    - 在 GitHub 页面点击 **"Actions"** 标签
-   - 选择 **"Build APK"** 工作流
+   - 选择 **"Build Signed Android APK"**（`android-build.yml`）工作流
    - 点击 **"Run workflow"** 按钮
-   - 选择分支（通常是 main/master）
+   - 建议选 `main` 分支（workflow 同时监听 `master` 以兼容旧推送）
+
+> Tip: `upload-to-github.bat` 目前会把分支名规范为 `main`，临时用你在 `.git_token` 里的 PAT 推送，并在推送后恢复远程 URL（不再把 token 记录在 `.git/config`）。
 
 3. **下载 APK**
    - 等待打包完成（首次约 3-5 分钟）
@@ -130,15 +132,20 @@ cordova run android
 ### config.xml
 
 ```xml
-<widget id="com.leilei.studytracker" version="2.1.0">
+<widget id="com.leilei.studytracker"
+        version="2.1.3"
+        android-versionCode="213"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>学习监督</name>
     <content src="index.html" />
-    <icon src="resources/android/icon/icon.png" density="xxxhdpi" />
+    <icon src="resources/android/icon/icon.png" />
 </widget>
 ```
 
 - `id`: 应用包名
-- `version`: 应用版本号
+- `version`: 应用显示版本号
+- `android-versionCode`: Android 内部版本号（用于升级判断）
 - `content`: 启动页面
 - `icon`: 应用图标路径
 
@@ -157,9 +164,10 @@ cordova run android
 
 ### 数据备份
 
-- **导出**：生成 JSON 文件，包含所有数据
+- **导出**：生成 JSON 备份文件，并自动保存到本地存储
 - **导入**：选择备份文件，恢复所有数据
-- **Excel 导出**：生成结构化 Excel 报表（4 个工作表）
+- **Excel 导出**：生成结构化 Excel 报表（真实 `.xlsx`，4 个工作表）
+- **保存位置**：安卓优先保存到 `Download/Downloads`，不可用时回退到应用可访问目录；浏览器环境保存到默认下载目录
 - **建议**：定期备份，防止数据丢失
 
 ## 🎯 使用技巧
@@ -188,7 +196,9 @@ cordova run android
 
 ### 5. Excel 导出
 - 点击设置→「📊 导出学习统计（Excel）」
-- 自动保存到下载目录
+- 自动生成真实 `.xlsx` 文件并保存到本地
+- 安卓优先保存到 `Download/Downloads`；如系统限制该目录，则自动回退到应用可访问目录
+- 浏览器环境会保存到浏览器默认下载目录
 - 文件名格式：`孩子姓名_学习统计_日期.xlsx`
 - 包含 4 个工作表：基本信息、每日汇总、科目统计、作业明细
 
@@ -228,6 +238,14 @@ cordova run android
    - 部分老版本浏览器可能不支持某些功能
 
 ## 📝 更新日志
+
+### v2.1.3（2026-03-20）
+- ✨ 备份数据升级为真实文件保存，点击后直接生成 `.json` 文件，不再依赖剪贴板
+- ✨ Excel 导出升级为真实 `.xlsx` 文件，包含 4 个工作表
+- ✨ 安卓环境新增本地文件保存能力，优先写入 `Download/Downloads`
+- 🔧 修复 Android 平台损坏导致无法真实保存文件的问题
+- 🔧 修复 Cordova File 插件未正确注入导致仅触发“浏览器下载”提示的问题
+- 🔧 文档同步更新为“真实导出 + 本地保存”说明
 
 ### v2.1.2（2026-03-17）
 - ✨ 新增编辑自定义科目时支持修改科目名称、图标、主题颜色

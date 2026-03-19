@@ -8,9 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#667eea">
     <title>儿童学习进度监督</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="lib/vue.global.prod.js"></script>
+    <script src="lib/chart.umd.min.js"></script>
+    <script src="lib/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html, body { overflow-x: hidden; }
@@ -415,8 +415,8 @@
             <!-- 版本信息 -->
             <div style="background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
                 <div style="font-size:18px;font-weight:bold;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;margin-bottom:8px;">📚 学习监督</div>
-                <div style="font-size:14px;color:#666;margin-bottom:4px;">版本 v2.1.2</div>
-                <div style="font-size:12px;color:#999;">更新时间 2026年3月17日</div>
+                <div style="font-size:14px;color:#666;margin-bottom:4px;">版本 v2.1.3</div>
+                <div style="font-size:12px;color:#999;">更新时间 2026年3月20日</div>
             </div>
         </div>
         <!-- 设置页面结束 -->
@@ -773,7 +773,7 @@
                 <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
                     <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e2e8f0;">
                         <div style="font-weight:bold;color:#667eea;font-size:16px;margin-bottom:5px;">📚 学习进度监督 - 完整使用文档</div>
-                        <div style="color:#64748b;font-size:12px;">版本：v2.1.2 | 最后更新：2026年3月17日</div>
+                        <div style="color:#64748b;font-size:12px;">版本：v2.1.3 | 最后更新：2026年3月20日</div>
                     </div>
 
                     <!-- 快速入门 -->
@@ -823,7 +823,7 @@
                             <li><strong>自定义科目</strong>：支持无限添加科目，可自定义名称、Emoji图标、主题颜色，不需要的科目可删除，自动适配所有功能页面</li>
                             <li><strong>作业模板配置</strong>：每个科目单独配置作业名称和预计完成时间，修改后即时生效</li>
                             <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）</li>
-                            <li><strong>数据安全</strong>：支持一键备份/恢复数据、导出Excel统计报表，多种重置选项满足不同需求</li>
+                            <li><strong>数据安全</strong>：支持一键备份/恢复数据、真实导出 Excel 统计报表，并自动保存到本地存储，多种重置选项满足不同需求</li>
                         </ul>
                     </div>
 
@@ -883,10 +883,10 @@
                         <p style="margin-left:12px;margin-bottom:10px;">
                             导出内容：包含4个结构化工作表<br>
                             • 基本信息表：孩子姓名、年级、年龄、累计学习天数等基础信息<br>
-                            • 每日汇总表：按日期统计每天的作业数量和总学习时长，选中数据可一键生成学习趋势柱状图<br>
-                            • 科目统计表：各科目总作业数量、总学习时长、平均单次时长，可生成科目占比饼图/柱状图<br>
+                            • 每日汇总表：按日期统计每天的作业数量和总学习时长<br>
+                            • 科目统计表：各科目总作业数量、总学习时长、平均单次时长<br>
                             • 作业明细表：所有历史作业的完整记录，包含科目、作业名称、用时、预计用时、异常标记、备注等全部信息<br>
-                            操作：点击设置→「📊 导出学习统计（Excel）」即可，文件自动保存到下载目录，文件名按「孩子姓名_学习统计_日期」自动命名
+                            操作：点击设置→「📊 导出学习统计（Excel）」即可，系统会生成真实 `.xlsx` 文件；安卓优先自动保存到 `Download/Downloads`，如系统限制则回退到应用可访问目录，文件名按「孩子姓名_学习统计_日期」自动命名
                         </p>
 
                         <div style="margin-bottom:10px;"><strong>【快捷时间输入】</strong></div>
@@ -914,7 +914,7 @@
                             </li>
                             <li style="margin-bottom:8px;">
                                 <strong>Q：导出的Excel文件在哪里？</strong><br>
-                                A：安卓手机保存在「内部存储→Download」目录，苹果手机保存在浏览器下载目录，文件名格式为「孩子姓名_学习统计_日期.xlsx」。
+                                A：安卓手机会优先保存到「内部存储→Download / Downloads」目录；如果系统限制该目录，则会自动回退到应用可访问目录。浏览器环境保存到浏览器默认下载目录，文件名格式为「孩子姓名_学习统计_日期.xlsx」。
                             </li>
                             <li style="margin-bottom:8px;">
                                 <strong>Q：为什么有些作业提交时不提示异常？</strong><br>
@@ -922,7 +922,7 @@
                             </li>
                             <li style="margin-bottom:8px;">
                                 <strong>Q：备份的文件在手机哪里找？</strong><br>
-                                A：安卓手机保存在「内部存储→Download」目录，苹果手机会直接下载到浏览器的下载目录，文件名格式为「学习进度备份_日期.json」。
+                                A：安卓手机会优先保存到「内部存储→Download / Downloads」目录；如果系统限制该目录，则会自动回退到应用可访问目录。浏览器环境会保存到浏览器默认下载目录，文件名格式为「学习进度备份_日期.json」。
                             </li>
                             <li style="margin-bottom:8px;">
                                 <strong>Q：换手机了怎么转移数据？</strong><br>
@@ -990,6 +990,7 @@
         <div class="toast" v-if="toastMsg" :class="toastClass">{{ toastMsg }}</div>
     </div>
 
+    <script src="cordova.js"></script>
     <script>
         const { createApp, ref, computed, onMounted, watch } = Vue;
         const API_BASE = 'http://localhost:8000/api';
@@ -1039,6 +1040,13 @@
                 const commonEmojis = ref(['📚', '🔬', '⚗️', '🎨', '🎵', '⚽', '🏛️', '🌍', '💻', '🎭', '📈', '🎤', '✏️', '🔤', '📐', '⚛️', '🧪', '🧬', '🎹', '🏃', '🧘', '🗺️', '📜', '📊']);
                 // 预设好看的科目主题色
                 const presetColors = ref(['#e53935', '#1e88e5', '#fb8c00', '#9c27b0', '#43a047', '#f06292', '#7986cb', '#ffb300', '#8d6e63', '#00acc1', '#f4511e', '#7cb342', '#5c6bc0', '#d81b60', '#ff9800', '#8bc34a', '#3949ab', '#00bcd4', '#ffc107', '#9e9e9e', '#009688', '#ff5722', '#673ab7', '#2196f3', '#4caf50', '#ffeb3b', '#9c27b0', '#3f51b5', '#03a9f4', '#8bc34a', '#ffc107', '#ff5722']);
+                const formatLocalDateKey = (source = new Date()) => {
+                    const date = new Date(source);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
                 let homeworkPieInstance = null;
                 let durationPieInstance = null;
                 
@@ -1168,7 +1176,7 @@
                         // 如果有已完成的作业，检查完成日期
                         if (doneItems.length > 0) {
                             const today = new Date();
-                            const todayKey = today.toISOString().split('T')[0]; // 今天的日期 key
+                            const todayKey = formatLocalDateKey(today); // 今天的日期 key
                             
                             // 检查已完成作业的完成日期是否是今天之前（即昨天或更早）
                             const hasOldCompletion = doneItems.some(h => {
@@ -1176,7 +1184,7 @@
                                     // 解析"2026 年 3 月 11 日 星期三"格式
                                     const dateStr = h.completion_date.replace(/[年月]/g, '-').replace(/[日 ].*/g, '');
                                     try {
-                                        const itemDate = new Date(dateStr).toISOString().split('T')[0];
+                                        const itemDate = formatLocalDateKey(new Date(dateStr));
                                         return itemDate !== todayKey; // 完成日期不是今天
                                     } catch (e) {
                                         console.warn('日期解析失败:', h.completion_date);
@@ -1190,7 +1198,7 @@
                                 // 有过期的已完成作业，需要归档
                                 const yesterday = new Date();
                                 yesterday.setDate(yesterday.getDate() - 1);
-                                const yesterdayKey = yesterday.toISOString().split('T')[0];
+                                const yesterdayKey = formatLocalDateKey(yesterday);
                                 const yesterdayDate = yesterday.getFullYear() + '年' + (yesterday.getMonth() + 1) + '月' + yesterday.getDate() + '日 ' + ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][yesterday.getDay()];
                                 
                                 // 检查是否已经归档
@@ -1448,7 +1456,7 @@
                     if (doneItems.length === 0) return;
                     const archive = {
                         date: currentDate.value,
-                        dateKey: new Date().toISOString().split('T')[0],
+                        dateKey: formatLocalDateKey(),
                         items: doneItems
                     };
                     const existingIndex = historyList.value.findIndex(h => h.dateKey === archive.dateKey);
@@ -1479,9 +1487,111 @@
                     localStorage.removeItem('todayHomework');
                     showToast('已归档并清空', 'success');
                 };
+
+                const sanitizeFileName = (name = '未命名') => {
+                    const safeName = String(name).replace(/[\\/:*?"<>|]/g, '_').trim();
+                    return safeName || '未命名';
+                };
+
+                const triggerBrowserDownload = (blob, fileName) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                };
+
+                const isCordovaFileReady = () => {
+                    return !!(window.cordova && window.cordova.file && window.resolveLocalFileSystemURL);
+                };
+
+                const writeFileEntry = (dirEntry, fileName, blob) => {
+                    return new Promise((resolve, reject) => {
+                        dirEntry.getFile(fileName, { create: true, exclusive: false }, (fileEntry) => {
+                            fileEntry.createWriter((writer) => {
+                                let truncated = false;
+                                writer.onerror = (err) => reject(err);
+                                writer.onwriteend = () => {
+                                    if (!truncated) {
+                                        truncated = true;
+                                        writer.write(blob);
+                                        return;
+                                    }
+                                    resolve(fileEntry.nativeURL || fileEntry.toURL());
+                                };
+                                writer.truncate(0);
+                            }, reject);
+                        }, reject);
+                    });
+                };
+
+                const resolvePreferredCordovaDirectory = () => {
+                    return new Promise((resolve, reject) => {
+                        if (!isCordovaFileReady()) {
+                            reject(new Error('Cordova 文件能力不可用'));
+                            return;
+                        }
+
+                        const tryAppPrivateDir = () => {
+                            const fallbackDir = window.cordova.file.externalDataDirectory || window.cordova.file.dataDirectory;
+                            if (!fallbackDir) {
+                                reject(new Error('没有可用的保存目录'));
+                                return;
+                            }
+                            window.resolveLocalFileSystemURL(fallbackDir, resolve, reject);
+                        };
+
+                        const externalRoot = window.cordova.file.externalRootDirectory;
+                        if (!externalRoot) {
+                            tryAppPrivateDir();
+                            return;
+                        }
+
+                        window.resolveLocalFileSystemURL(externalRoot, (rootEntry) => {
+                            rootEntry.getDirectory('Download', { create: true }, resolve, () => {
+                                rootEntry.getDirectory('Downloads', { create: true }, resolve, tryAppPrivateDir);
+                            });
+                        }, tryAppPrivateDir);
+                    });
+                };
+
+                const writeBlobToCordovaFile = async (blob, fileName) => {
+                    const dirEntry = await resolvePreferredCordovaDirectory();
+                    return writeFileEntry(dirEntry, fileName, blob);
+                };
+
+                const saveBlobFile = async (blob, fileName, successLabel) => {
+                    try {
+                        if (isCordovaFileReady()) {
+                            const savedPath = await writeBlobToCordovaFile(blob, fileName);
+                            showToast(successLabel + '已保存', 'success');
+                            alert('✅ ' + successLabel + '已保存成功！\n\n📁 保存位置：\n' + savedPath + '\n\n提示：这是 APP 可直接访问的本地文件。');
+                            return;
+                        }
+
+                        triggerBrowserDownload(blob, fileName);
+                        showToast(successLabel + '已下载', 'success');
+                        alert('✅ ' + successLabel + '已开始下载。\n\n如果你当前是在浏览器中打开，会保存到浏览器默认下载目录。');
+                    } catch (error) {
+                        console.error(successLabel + '保存失败:', error);
+                        try {
+                            triggerBrowserDownload(blob, fileName);
+                            showToast(successLabel + '已尝试下载', 'success');
+                            alert('⚠️ APP 本地保存失败，已改为浏览器下载方式。\n\n文件名：' + fileName);
+                        } catch (downloadError) {
+                            console.error(successLabel + '下载失败:', downloadError);
+                            showToast(successLabel + '保存失败', 'error');
+                            alert('❌ ' + successLabel + '保存失败，请检查存储权限或重试。');
+                        }
+                    }
+                };
                 
                 // 导出数据到文件
-                const exportData = () => {
+                const exportData = async () => {
                     const data = {
                         version: '1.0',
                         exportTime: new Date().toISOString(),
@@ -1495,53 +1605,48 @@
                         customSubjects: localStorage.getItem('customSubjects')
                     };
                     const jsonStr = JSON.stringify(data, null, 2);
-                    const backupFileName = '学习进度备份_' + new Date().toISOString().split('T')[0] + '.json';
-                    
-                    // 复制到剪贴板
-                    const textarea = document.createElement('textarea');
-                    textarea.value = jsonStr;
-                    textarea.style.position = 'fixed';
-                    textarea.style.opacity = '0';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    
-                    alert('✅ 备份成功！\n\n📋 备份内容已自动复制到剪贴板\n\n💾 保存步骤：\n1. 打开手机「文件管理」APP\n2. 进入内部存储/Download 目录\n3. 新建文本文件，命名为：' + backupFileName + '\n4. 打开文件，粘贴剪贴板内容，保存即可\n\n恢复时：选择这个文件，点恢复数据即可。');
+                    const backupFileName = '学习进度备份_' + formatLocalDateKey() + '.json';
+                    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+                    await saveBlobFile(blob, backupFileName, '备份文件');
                 };
                 
                 // 导出Excel
-                const exportExcel = () => {
+                const exportExcel = async () => {
                     if (!currentChild.value) {
                         showToast('请先设置孩子信息', 'error');
                         return;
                     }
-                    // 生成 CSV 内容
-                    let csv = '\uFEFF'; // BOM for Excel
-                    csv += '基本信息\n';
-                    csv += '孩子姓名，' + currentChild.value.child_name + '\n';
-                    csv += '年级，' + currentChild.value.grade + '\n';
-                    csv += '年龄，' + currentChild.value.age + '岁\n';
-                    csv += '性别，' + currentChild.value.gender + '\n';
-                    csv += '导出时间，' + new Date().toLocaleString('zh-CN') + '\n';
-                    csv += '总学习天数，' + studyDays.value + '天\n';
-                    csv += '总作业数量，' + weekStats.value.homework + '项\n';
-                    csv += '总学习时长，' + weekStats.value.duration + '分钟\n\n';
-                    
-                    csv += '每日汇总\n';
-                    csv += '日期，作业数量，总时长 (分钟),平均时长 (分钟)\n';
+
+                    const workbook = XLSX.utils.book_new();
+                    const exportTime = new Date().toLocaleString('zh-CN');
+                    const safeChildName = sanitizeFileName(currentChild.value.child_name || '学习统计');
+                    const fileName = safeChildName + '_学习统计_' + formatLocalDateKey() + '.xlsx';
+
+                    const basicInfoSheet = XLSX.utils.aoa_to_sheet([
+                        ['项目', '内容'],
+                        ['孩子姓名', currentChild.value.child_name || ''],
+                        ['年级', currentChild.value.grade || ''],
+                        ['年龄', currentChild.value.age ? currentChild.value.age + '岁' : ''],
+                        ['性别', currentChild.value.gender || ''],
+                        ['导出时间', exportTime],
+                        ['总学习天数', studyDays.value + '天'],
+                        ['近 7 天总作业数量', weekStats.value.homework + '项'],
+                        ['近 7 天总学习时长', weekStats.value.duration + '分钟']
+                    ]);
+
+                    const dailySummaryRows = [['日期', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
                     historyList.value.forEach(day => {
                         const count = day.items.length;
                         const duration = day.items.reduce((sum, item) => sum + parseInt(item.duration || 0), 0);
                         const avg = count > 0 ? Math.round(duration / count) : 0;
-                        csv += day.date + ',' + count + ',' + duration + ',' + avg + '\n';
+                        dailySummaryRows.push([day.date, count, duration, avg]);
                     });
-                    csv += '\n';
-                    
-                    csv += '科目统计\n';
-                    csv += '科目，作业数量，总时长 (分钟),平均时长 (分钟)\n';
+                    const dailySummarySheet = XLSX.utils.aoa_to_sheet(dailySummaryRows);
+
+                    const subjectStatsRows = [['科目', '作业数量', '总时长(分钟)', '平均时长(分钟)']];
                     subjectList.value.forEach(subject => {
-                        let count = 0, duration = 0;
+                        let count = 0;
+                        let duration = 0;
                         historyList.value.forEach(day => {
                             day.items.forEach(item => {
                                 if (item.subject_name === subject.name) {
@@ -1551,32 +1656,44 @@
                             });
                         });
                         if (count > 0) {
-                            const avg = Math.round(duration / count);
-                            csv += subject.name + ',' + count + ',' + duration + ',' + avg + '\n';
+                            subjectStatsRows.push([subject.name, count, duration, Math.round(duration / count)]);
                         }
                     });
-                    csv += '\n';
-                    
-                    csv += '作业明细\n';
-                    csv += '日期，科目，作业名称，用时 (分钟),预期用时 (分钟),状态，异常备注\n';
+                    const subjectStatsSheet = XLSX.utils.aoa_to_sheet(subjectStatsRows);
+
+                    const detailRows = [['日期', '科目', '作业名称', '用时(分钟)', '预期用时(分钟)', '状态', '异常备注']];
                     historyList.value.forEach(day => {
                         day.items.forEach(item => {
-                            csv += day.date + ',' + item.subject_name + ',' + item.task_name + ',' + item.duration + ',' + (item.expected_duration || '') + ',' + (item.status === 'done' ? '已完成' : '未完成') + ',' + (item.abnormal_note || '') + '\n';
+                            detailRows.push([
+                                day.date,
+                                item.subject_name || '',
+                                item.task_name || '',
+                                parseInt(item.duration || 0),
+                                item.expected_duration || '',
+                                item.status === 'done' ? '已完成' : '未完成',
+                                item.abnormal_note || ''
+                            ]);
                         });
                     });
-                    
-                    // 复制到剪贴板
-                    const textarea = document.createElement('textarea');
-                    textarea.value = csv;
-                    textarea.style.position = 'fixed';
-                    textarea.style.opacity = '0';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    
-                    const fileName = currentChild.value.child_name + '_学习统计_' + new Date().toISOString().split('T')[0] + '.csv';
-                    alert('✅ Excel(CSV) 已导出！\n\n📋 数据已自动复制到剪贴板\n\n💾 保存步骤：\n1. 打开手机「文件管理」APP\n2. 进入内部存储/Download 目录\n3. 新建文本文件，命名为：' + fileName + '\n4. 打开文件，粘贴剪贴板内容，保存\n5. 直接用 Excel 或 WPS 打开这个.csv 文件即可查看\n\nCSV 是 Excel 支持的格式，可以直接打开！');
+                    const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
+
+                    XLSX.utils.book_append_sheet(workbook, basicInfoSheet, '基本信息');
+                    XLSX.utils.book_append_sheet(workbook, dailySummarySheet, '每日汇总');
+                    XLSX.utils.book_append_sheet(workbook, subjectStatsSheet, '科目统计');
+                    XLSX.utils.book_append_sheet(workbook, detailSheet, '作业明细');
+
+                    const workbookArray = XLSX.write(workbook, {
+                        bookType: 'xlsx',
+                        type: 'array',
+                        compression: true
+                    });
+                    const blob = new Blob([
+                        workbookArray
+                    ], {
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    });
+
+                    await saveBlobFile(blob, fileName, 'Excel 文件');
                 };
                 
 
@@ -1923,7 +2040,7 @@
                         // 保存到当天作业
                         localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
                         // 同步到历史记录
-                        const todayKey = new Date().toISOString().split('T')[0];
+                        const todayKey = formatLocalDateKey();
                         const dayIndex = historyList.value.findIndex(d => d.dateKey === todayKey);
                         if (dayIndex >= 0) {
                             const itemIndex = historyList.value[dayIndex].items.findIndex(i => i.template_id === currentEditItem.value.template_id);
@@ -1959,7 +2076,7 @@
 
                 // 同步到历史记录
                 const syncToHistory = (item) => {
-                    const todayKey = new Date().toISOString().split('T')[0];
+                    const todayKey = formatLocalDateKey();
                     const todayDate = currentDate.value;
                     
                     // 检查今天的历史记录是否存在
@@ -2559,7 +2676,7 @@
                     for (let i = 6; i >= 0; i--) {
                         const date = new Date(today);
                         date.setDate(date.getDate() - i);
-                        const dateKey = date.toISOString().split('T')[0];
+                        const dateKey = formatLocalDateKey(date);
                         const dateStr = (date.getMonth() + 1) + '/' + date.getDate();
                         
                         const dayRecord = historyList.value.find(h => h.dateKey === dateKey);
