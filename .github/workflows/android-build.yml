@@ -59,15 +59,15 @@ jobs:
     - name: Build Signed APK
       run: |
         cordova build android --release -- \
+          --packageType=apk \
           --keystore=studytracker.keystore \
           --storePassword=${{ secrets.KEYSTORE_PASSWORD }} \
           --alias=${{ secrets.KEY_ALIAS }} \
           --password=${{ secrets.KEY_PASSWORD }}
 
-    - name: Upload APK and AAB
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: StudyTracker-APK-v${{ env.APP_VERSION }}
         path: |
           platforms/android/app/build/outputs/**/*.apk
-          platforms/android/app/build/outputs/**/*.aab
