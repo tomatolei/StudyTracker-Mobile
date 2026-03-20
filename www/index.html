@@ -41,15 +41,15 @@
         .page.active { display: block; }
         
         /* 顶部孩子信息 */
-        .child-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); position: relative; overflow: hidden; }
-        .child-header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
-        .child-avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; }
+        .child-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 16px 16px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); position: relative; overflow: hidden; }
+        .child-header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 180px; height: 180px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); border-radius: 50%; }
+        .child-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; }
         .child-avatar:active { animation: pulse 0.3s ease; }
-        .child-info { flex: 1; position: relative; z-index: 1; pointer-events: none; }
+        .child-info { flex: 1; position: relative; z-index: 1; pointer-events: none; min-width: 0; }
         .child-info * { pointer-events: auto; }
-        .child-name { font-size: 14px; font-weight: bold; margin-bottom: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.3; word-break: break-all; white-space: normal; }
-        .child-detail { font-size: 14px; opacity: 0.95; }
-        .mood-display { font-size: 28px; background: rgba(255,255,255,0.2); padding: 10px 14px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: pointer; position: relative; z-index: 10; pointer-events: auto; }
+        .child-name { font-size: 13px; font-weight: bold; margin-bottom: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.25; word-break: break-all; white-space: normal; }
+        .child-detail { font-size: 13px; opacity: 0.95; }
+        .mood-display { font-size: 24px; background: rgba(255,255,255,0.18); padding: 8px 12px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.26); transition: all 0.3s ease; cursor: pointer; position: relative; z-index: 10; pointer-events: auto; }
         .mood-display:active { animation: bounce 0.3s ease; }
         
         /* 今日统计 */
@@ -159,52 +159,56 @@
                 <div class="child-info">
                     <div class="child-name">{{ currentChild ? (currentChild.child_name + ' · ' + currentChild.grade) : '点击头像添加孩子信息' }}</div>
                     <div class="child-detail" v-if="currentChild">{{ currentChild.age }}岁 · {{ currentChild.gender }}</div>
-                    <div style="font-size:12px;opacity:0.9;margin-top:2px;" v-if="currentChild">📊 已坚持 {{ studyDays }} 天</div>
+                    <div style="font-size:11px;opacity:0.9;margin-top:2px;" v-if="currentChild">📊 已坚持 {{ studyDays }} 天</div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+                        <button v-for="child in childrenList" :key="child.id" @click.stop="selectChild(child.id)" :style="{padding:'3px 9px',borderRadius:'999px',border: currentChildId===child.id ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.32)',background: currentChildId===child.id ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.06)',color:'#fff',fontSize:'10px',cursor:'pointer'}">{{ child.child_name }}</button>
+                        <button @click.stop="startAddChild" style="padding:3px 8px;border-radius:999px;border:1px dashed rgba(255,255,255,0.6);background:rgba(255,255,255,0.04);color:#fff;font-size:10px;cursor:pointer;">+ 添加</button>
+                    </div>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:3px;">今日心情</div>
-                    <div class="mood-display" @click="showMoodDialog = true" style="cursor:pointer;" title="点击选择心情">{{ getMoodEmoji() }}</div>
+                <div style="text-align:center;min-width:76px;">
+                    <div style="font-size:10px;color:rgba(255,255,255,0.88);margin-bottom:2px;">今日心情</div>
+                    <div class="mood-display" @click="showMoodDialog = true" style="cursor:pointer;min-width:68px;" title="点击选择心情">{{ getMoodEmoji() }}</div>
                 </div>
             </div>
             
             <!-- 日期显示 -->
-            <div style="text-align:center;padding:10px;background:white;border-radius:10px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:15px;color:#667eea;font-weight:bold;">📅 {{ currentDate }}</div>
+            <div style="text-align:center;padding:8px;background:white;border-radius:10px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:14px;color:#667eea;font-weight:bold;">📅 {{ currentDate }}</div>
             </div>
 
             <!-- 今日概览 -->
-            <div class="stats-card" style="padding:16px;">
-                <div class="stats-title" style="margin-bottom:10px;">
+            <div class="stats-card" style="padding:14px;">
+                <div class="stats-title" style="margin-bottom:8px;">
                     <span>✨ 今日概览</span>
-                    <span style="font-size:11px;color:#64748b;">近 7 天 {{ recentStudyDays }} 天</span>
+                    <span style="font-size:10px;color:#64748b;">近 7 天 {{ recentStudyDays }} 天</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-                    <div style="min-width:0;padding:14px 12px;border-radius:16px;background:linear-gradient(135deg,#eef2ff 0%,#e9d5ff 100%);border:1px solid rgba(102,126,234,0.12);box-shadow:0 3px 10px rgba(102,126,234,0.08);">
-                        <div style="font-size:12px;color:#64748b;margin-bottom:4px;">今日完成率</div>
-                        <div style="font-size:26px;font-weight:bold;color:#4f46e5;line-height:1.1;">{{ completionRate }}%</div>
-                        <div style="font-size:11px;color:#64748b;margin-top:4px;line-height:1.5;">{{ doneCount }} / {{ totalCount }} 项</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+                    <div style="min-width:0;padding:12px 11px;border-radius:15px;background:linear-gradient(135deg,#eef2ff 0%,#e9d5ff 100%);border:1px solid rgba(102,126,234,0.12);box-shadow:0 3px 10px rgba(102,126,234,0.08);">
+                        <div style="font-size:11px;color:#64748b;margin-bottom:3px;">今日完成率</div>
+                        <div style="font-size:24px;font-weight:bold;color:#4f46e5;line-height:1.05;">{{ completionRate }}%</div>
+                        <div style="font-size:10px;color:#64748b;margin-top:3px;line-height:1.4;">{{ doneCount }} / {{ totalCount }} 项</div>
                     </div>
-                    <div style="min-width:0;padding:14px 12px;border-radius:16px;background:linear-gradient(135deg,#ecfdf5 0%,#dcfce7 100%);border:1px solid rgba(34,197,94,0.12);box-shadow:0 3px 10px rgba(34,197,94,0.08);">
-                        <div style="font-size:12px;color:#64748b;margin-bottom:4px;">今日已完成用时</div>
-                        <div style="font-size:26px;font-weight:bold;color:#16a34a;line-height:1.1;">{{ totalDuration }}</div>
-                        <div style="font-size:11px;color:#64748b;margin-top:4px;line-height:1.5;">剩余 {{ remainingCount }} 项</div>
+                    <div style="min-width:0;padding:12px 11px;border-radius:15px;background:linear-gradient(135deg,#ecfdf5 0%,#dcfce7 100%);border:1px solid rgba(34,197,94,0.12);box-shadow:0 3px 10px rgba(34,197,94,0.08);">
+                        <div style="font-size:11px;color:#64748b;margin-bottom:3px;">今日已完成用时</div>
+                        <div style="font-size:24px;font-weight:bold;color:#16a34a;line-height:1.05;">{{ totalDuration }}</div>
+                        <div style="font-size:10px;color:#64748b;margin-top:3px;line-height:1.4;">剩余 {{ remainingCount }} 项</div>
                     </div>
                 </div>
-                <div style="margin-top:8px;font-size:11px;color:#64748b;text-align:center;line-height:1.5;">
+                <div style="margin-top:6px;font-size:10px;color:#64748b;text-align:center;line-height:1.45;">
                     今天已完成 {{ doneCount }} / {{ totalCount }} 项，最近 7 天已学习 {{ recentStudyDays }} 天。
                 </div>
             </div>
 
             <!-- 快速操作 -->
-            <div class="stats-card" style="padding:16px;">
-                <div class="stats-title" style="margin-bottom:10px;">
+            <div class="stats-card" style="padding:14px;">
+                <div class="stats-title" style="margin-bottom:8px;">
                     <span>⚡ 快速操作</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-                    <button class="btn btn-secondary" style="padding:10px;font-size:13px;border-radius:10px;" @click="showHomeworkSelector = true">➕ 选择作业</button>
-                    <button class="btn btn-secondary" style="padding:10px;font-size:13px;border-radius:10px;" @click="showHistoryDialog = true">📜 查看历史</button>
-                    <button class="btn btn-secondary" style="padding:10px;font-size:13px;border-radius:10px;" @click="exportData">💾 备份数据</button>
-                    <button class="btn btn-secondary" style="padding:10px;font-size:13px;border-radius:10px;" @click="exportExcel">📊 导出 Excel</button>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:7px;">
+                    <button class="btn btn-secondary" style="padding:8px 6px;font-size:12px;border-radius:10px;" @click="showHomeworkSelector = true">➕ 选择作业</button>
+                    <button class="btn btn-secondary" style="padding:8px 6px;font-size:12px;border-radius:10px;" @click="showHistoryDialog = true">📜 查看历史</button>
+                    <button class="btn btn-secondary" style="padding:8px 6px;font-size:12px;border-radius:10px;" @click="exportData">💾 备份数据</button>
+                    <button class="btn btn-secondary" style="padding:8px 6px;font-size:12px;border-radius:10px;" @click="exportExcel">📊 导出 Excel</button>
                 </div>
             </div>
 
@@ -353,28 +357,32 @@
         <div class="page" :class="{active: currentTab === 'report'}">
             <!-- 报告页面内容 -->
             <div style="margin-bottom:15px;">
-                <div class="child-header" style="padding:20px;">
-                    <div class="child-avatar" style="width:70px;height:70px;font-size:35px;" @click="editChild">
+                <div class="child-header" style="padding:16px 16px 14px;">
+                    <div class="child-avatar" style="width:64px;height:64px;font-size:30px;" @click="editChild">
                         <img v-if="childAvatar" :src="childAvatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
                         <span v-else>{{ currentChild ? (currentChild.gender === '男' ? '👦' : '👧') : '👤' }}</span>
                     </div>
-                    <div style="flex:1;">
-                        <div style="font-size:20px;font-weight:bold;margin-bottom:5px;">{{ currentChild ? currentChild.child_name : '点击添加孩子信息' }}</div>
-                        <div style="font-size:13px;opacity:0.9;">{{ currentChild ? currentChild.grade : '' }} {{ currentChild ? '· ' + currentChild.age + '岁' : '' }}</div>
-                        <div style="font-size:11px;opacity:0.8;margin-top:5px;">📊 已坚持 {{ studyDays }} 天</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:18px;font-weight:bold;margin-bottom:4px;">{{ currentChild ? currentChild.child_name : '点击添加孩子信息' }}</div>
+                        <div style="font-size:12px;opacity:0.9;">{{ currentChild ? currentChild.grade : '' }} {{ currentChild ? '· ' + currentChild.age + '岁' : '' }}</div>
+                        <div style="font-size:10px;opacity:0.8;margin-top:4px;">📊 已坚持 {{ studyDays }} 天</div>
+                        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+                            <button v-for="child in childrenList" :key="'report-'+child.id" @click.stop="selectChild(child.id)" :style="{padding:'3px 9px',borderRadius:'999px',border: currentChildId===child.id ? '1px solid rgba(255,255,255,0.92)' : '1px solid rgba(255,255,255,0.32)',background: currentChildId===child.id ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.06)',color:'#fff',fontSize:'10px',cursor:'pointer'}">{{ child.child_name }}</button>
+                        </div>
+                        <div style="font-size:10px;opacity:0.72;margin-top:6px;">📎 当前内容按孩子独立统计</div>
                     </div>
                 </div>
             </div>
             
             <!-- 本周摘要 -->
-            <div style="background:linear-gradient(135deg, #fb8c00 0%, #ffb74d 100%);color:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 4px 12px rgba(251,140,0,0.25);">
-                <div style="font-size:14px;font-weight:bold;margin-bottom:10px;">📈 本周学习摘要</div>
-                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;">
-                    <div><div style="font-size:20px;font-weight:bold;">{{ weekStats.homework }}</div><div style="font-size:10px;opacity:0.9;">总作业</div></div>
-                    <div><div style="font-size:20px;font-weight:bold;">{{ weekStats.duration }}</div><div style="font-size:10px;opacity:0.9;">总分钟</div></div>
-                    <div><div style="font-size:20px;font-weight:bold;">{{ weekStats.days }}</div><div style="font-size:10px;opacity:0.9;">学习天</div></div>
-                    <div><div style="font-size:20px;font-weight:bold;">{{ weekStats.avgDailyDuration }}</div><div style="font-size:10px;opacity:0.9;">日均分钟</div></div>
-                    <div><div style="font-size:20px;font-weight:bold;">{{ weekStats.avgDailyHomework }}</div><div style="font-size:10px;opacity:0.9;">日均作业</div></div>
+            <div style="background:linear-gradient(135deg, #fb8c00 0%, #ffb74d 100%);color:white;border-radius:15px;padding:14px 14px 13px;margin-bottom:12px;box-shadow:0 4px 12px rgba(251,140,0,0.25);">
+                <div style="font-size:13px;font-weight:bold;margin-bottom:8px;">📈 本周学习摘要</div>
+                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;">
+                    <div><div style="font-size:18px;font-weight:bold;">{{ weekStats.homework }}</div><div style="font-size:9px;opacity:0.88;">总作业</div></div>
+                    <div><div style="font-size:18px;font-weight:bold;">{{ weekStats.duration }}</div><div style="font-size:9px;opacity:0.88;">总分钟</div></div>
+                    <div><div style="font-size:18px;font-weight:bold;">{{ weekStats.days }}</div><div style="font-size:9px;opacity:0.88;">学习天</div></div>
+                    <div><div style="font-size:18px;font-weight:bold;">{{ weekStats.avgDailyDuration }}</div><div style="font-size:9px;opacity:0.88;">日均分钟</div></div>
+                    <div><div style="font-size:18px;font-weight:bold;">{{ weekStats.avgDailyHomework }}</div><div style="font-size:9px;opacity:0.88;">日均作业</div></div>
                 </div>
             </div>
             
@@ -411,22 +419,22 @@
 
             <!-- 作业数量饼图 -->
             <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:14px;font-weight:bold;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:14px;font-weight:bold;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 作业数量分布</span>
-                    <span style="font-size:12px;color:#667eea;">总作业: <strong>{{ subjectHomeworkRank.reduce((sum,item)=>sum+item.count, 0) }}</strong> 项</span>
+                    <span style="font-size:11px;color:#667eea;">总作业: <strong>{{ subjectHomeworkRank.reduce((sum,item)=>sum+item.count, 0) }}</strong> 项</span>
                 </div>
-                <div style="height:240px;display:flex;align-items:center;justify-content:center;max-width:300px;margin:0 auto;">
+                <div style="height:252px;display:flex;align-items:center;justify-content:center;max-width:316px;margin:0 auto;">
                     <canvas id="homeworkPieChart"></canvas>
                 </div>
             </div>
 
             <!-- 学习时长饼图 -->
             <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:14px;font-weight:bold;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:14px;font-weight:bold;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
                     <span>⏱️ 学习时长分布</span>
-                    <span style="font-size:12px;color:#667eea;">总时长: <strong>{{ subjectDurationRank.reduce((sum,item)=>sum+item.duration, 0) }}</strong> 分钟</span>
+                    <span style="font-size:11px;color:#667eea;">总时长: <strong>{{ subjectDurationRank.reduce((sum,item)=>sum+item.duration, 0) }}</strong> 分钟</span>
                 </div>
-                <div style="height:240px;display:flex;align-items:center;justify-content:center;max-width:300px;margin:0 auto;">
+                <div style="height:252px;display:flex;align-items:center;justify-content:center;max-width:316px;margin:0 auto;">
                     <canvas id="durationPieChart"></canvas>
                 </div>
             </div>
@@ -451,56 +459,65 @@
             </div>
             
             <!-- 科目配置 -->
-            <div style="background:white;border-radius:15px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:15px;font-weight:bold;margin-bottom:14px;color:#667eea;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:12px;color:#667eea;display:flex;justify-content:space-between;align-items:center;gap:8px;">
                     <span>📚 科目作业配置</span>
-                    <button class="btn btn-primary" @click="showAddSubjectDialog = true" style="padding:5px 12px;font-size:12px;border-radius:18px;">+ 添加科目</button>
+                    <button class="btn btn-primary" @click="showAddSubjectDialog = true" style="padding:4px 10px;font-size:11px;border-radius:16px;">+ 添加科目</button>
                 </div>
-                <div v-for="subject in subjectList" :key="subject.key" style="margin-bottom:14px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;">
+                <div v-for="subject in subjectList" :key="subject.key" style="margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
                         <div style="flex:1;min-width:0;">
-                            <div style="font-size:14px;font-weight:bold;line-height:1.4;">{{ subject.icon }} {{ subject.name }}</div>
-                            <div style="font-size:12px;color:#666;line-height:1.6;margin-top:4px;">{{ getSubjectSummary(subject.key) }}</div>
+                            <div style="font-size:13px;font-weight:bold;line-height:1.35;">{{ subject.icon }} {{ subject.name }}</div>
+                            <div style="font-size:11px;color:#666;line-height:1.45;margin-top:3px;">{{ getSubjectSummary(subject.key) }}</div>
                         </div>
-                        <div style="display:flex;gap:6px;flex-shrink:0;">
-                            <button class="btn btn-secondary" @click="editSubject(subject.key)" style="padding:5px 12px;font-size:12px;border-radius:18px;">✏️ 编辑</button>
-                            <button v-if="!subject.system" class="btn btn-secondary" @click="deleteSubject(subject.key)" style="padding:5px 10px;font-size:12px;border-radius:18px;color:#f56c6c;border-color:#f56c6c;">🗑️</button>
+                        <div style="display:flex;gap:5px;flex-shrink:0;align-items:center;">
+                            <button class="btn btn-secondary" @click="editSubject(subject.key)" style="padding:4px 10px;font-size:11px;border-radius:16px;">✏️ 编辑</button>
+                            <button v-if="!subject.system" class="btn btn-secondary" @click="deleteSubject(subject.key)" style="padding:4px 8px;font-size:11px;border-radius:16px;color:#94a3b8;border-color:#e2e8f0;background:#fff;">🗑️</button>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- 孩子信息 -->
-            <div style="background:white;border-radius:15px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:15px;font-weight:bold;margin-bottom:14px;color:#667eea;">👤 孩子信息</div>
-                <div style="font-size:13px;color:#666;margin-bottom:10px;line-height:1.7;" v-if="currentChild">
+            <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:12px;color:#667eea;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <span>👤 孩子信息</span>
+                    <button class="btn btn-secondary" @click="startAddChild" style="padding:4px 10px;font-size:11px;border-radius:16px;">+ 添加孩子</button>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                    <button v-for="child in childrenList" :key="child.id" @click="selectChild(child.id)" :style="{padding:'5px 10px',borderRadius:'999px',border: currentChildId===child.id ? '1px solid #667eea' : '1px solid #e2e8f0',background: currentChildId===child.id ? '#eef2ff' : '#f8fafc',color: currentChildId===child.id ? '#4f46e5' : '#475569',fontSize:'11px',cursor:'pointer'}">{{ child.child_name }}</button>
+                </div>
+                <div style="font-size:12px;color:#666;margin-bottom:8px;line-height:1.5;" v-if="currentChild">
                     {{ currentChild.child_name }} · {{ currentChild.grade }} · {{ currentChild.gender }} · {{ currentChild.age }}岁
                 </div>
-                <div style="font-size:13px;color:#999;margin-bottom:10px;line-height:1.7;" v-else>未设置</div>
-                <button class="btn btn-primary" @click="editChild" style="width:100%;font-size:13px;padding:10px;">✏️ 编辑孩子信息</button>
+                <div style="font-size:12px;color:#999;margin-bottom:8px;line-height:1.5;" v-else>未设置</div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-primary" @click="editChild" style="flex:1;font-size:12px;padding:8px 10px;">✏️ 编辑孩子信息</button>
+                </div>
             </div>
             
             <!-- 数据管理 -->
-            <div style="background:white;border-radius:15px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:15px;font-weight:bold;margin-bottom:14px;color:#667eea;">💾 数据管理</div>
-                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px;">
-                    <button class="btn btn-secondary" @click="exportData" style="font-size:13px;padding:10px;border-radius:10px;">📥 备份数据</button>
-                    <button class="btn btn-secondary" @click="showDataDialog = true" style="font-size:13px;padding:10px;border-radius:10px;">📂 恢复数据</button>
-                    <button class="btn btn-secondary" @click="exportExcel" style="font-size:13px;padding:10px;border-radius:10px;grid-column:1 / span 2;">📊 导出 Excel</button>
-                    <button class="btn btn-secondary" @click="showResetConfirm('all')" style="font-size:13px;padding:10px;border-radius:10px;grid-column:1 / span 2;">🔄 重置全部</button>
+            <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:8px;color:#667eea;">💾 数据管理</div>
+                <div style="font-size:11px;color:#64748b;line-height:1.5;margin-bottom:8px;">当前已启用 <strong style="color:#4f46e5;">{{ childrenList.length || 1 }}</strong> 个孩子，备份会一起打包。</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:8px;">
+                    <button class="btn btn-secondary" @click="exportData" style="font-size:12px;padding:8px 6px;border-radius:10px;">📥 备份数据</button>
+                    <button class="btn btn-secondary" @click="showDataDialog = true" style="font-size:12px;padding:8px 6px;border-radius:10px;">📂 恢复数据</button>
+                    <button class="btn btn-secondary" @click="exportExcel" style="font-size:12px;padding:8px 6px;border-radius:10px;grid-column:1 / span 2;">📊 导出 Excel</button>
+                    <button class="btn btn-secondary" @click="showResetConfirm('all')" style="font-size:12px;padding:8px 6px;border-radius:10px;grid-column:1 / span 2;">🔄 重置所有孩子学习数据</button>
                 </div>
             </div>
 
             <!-- 使用说明 -->
-            <div style="background:white;border-radius:15px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:15px;font-weight:bold;margin-bottom:14px;color:#667eea;">📖 使用说明</div>
-                <button class="btn btn-secondary" @click="showHelpDialog = true" style="width:100%;font-size:13px;padding:10px;border-radius:10px;">📋 查看完整使用文档</button>
+            <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:15px;font-weight:bold;margin-bottom:10px;color:#667eea;">📖 使用说明</div>
+                <button class="btn btn-secondary" @click="showHelpDialog = true" style="width:100%;font-size:12px;padding:8px 10px;border-radius:10px;">📋 查看完整使用文档</button>
             </div>
             
             <!-- 版本信息 -->
-            <div style="background:white;border-radius:15px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
+            <div style="background:white;border-radius:15px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
                 <div style="font-size:17px;font-weight:bold;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;margin-bottom:6px;">📚 学习监督</div>
-                <div style="font-size:13px;color:#666;margin-bottom:3px;">版本 v2.1.4</div>
+                <div style="font-size:13px;color:#666;margin-bottom:3px;">版本 v3.0</div>
                 <div style="font-size:11px;color:#999;">更新时间 2026年3月20日</div>
             </div>
         </div>
@@ -525,8 +542,9 @@
 
         <!-- 历史记录面板 -->
         <div class="dialog-overlay" v-if="showHistoryDialog" @click="showHistoryDialog = false">
-            <div class="dialog" style="max-width:400px;max-height:80vh;overflow-y:auto;padding:18px;" @click.stop>
-                <div class="dialog-title" style="margin-bottom:14px;">📜 完成历史</div>
+            <div class="dialog" style="max-width:400px;max-height:80vh;overflow-y:auto;padding:16px;" @click.stop>
+                <div class="dialog-title" style="margin-bottom:10px;">📜 完成历史</div>
+                <div style="font-size:12px;color:#64748b;margin-bottom:10px;">当前查看：{{ currentChild ? currentChild.child_name : '未选择孩子' }}</div>
                 
                 <div v-if="sortedHistoryList.length === 0" style="text-align:center;padding:26px 0;color:#999;">
                     <div style="font-size:36px;margin-bottom:8px;">📝</div>
@@ -535,24 +553,26 @@
                 
                 <div v-else>
                     <div v-for="day in sortedHistoryList" :key="day.dateKey" style="margin-bottom:16px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e9ecef;">
-                            <div style="font-size:13px;font-weight:700;color:#667eea;line-height:1.4;">{{ day.date }}</div>
-                            <button @click="deleteDay(day.dateKey)" style="padding:5px 8px;font-size:11px;background:#fff5f5;border:1px solid #fecaca;border-radius:8px;color:#dc2626;cursor:pointer;white-space:nowrap;">🗑️ 删除</button>
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e9ecef;">
+                            <div style="min-width:0;">
+                                <div style="font-size:13px;font-weight:700;color:#667eea;line-height:1.4;">{{ day.date }}</div>
+                                <div style="font-size:11px;color:#94a3b8;margin-top:3px;">{{ day.items.length }} 项 · {{ day.items.reduce((sum, entry) => sum + parseInt(entry.duration || 0), 0) }} 分钟</div>
+                            </div>
+                            <button @click="deleteDay(day.dateKey)" style="padding:4px 8px;font-size:10px;background:#fff;border:1px solid #e5e7eb;border-radius:999px;color:#94a3b8;cursor:pointer;white-space:nowrap;">删整天</button>
                         </div>
-                        <div v-for="item in day.items" :key="item.template_id" style="padding:9px 10px;background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;margin-bottom:7px;">
-                            <div style="display:flex;align-items:center;gap:8px;">
+                        <div v-for="item in day.items" :key="item.template_id" style="padding:9px 10px;background:#f8fafc;border:1px solid #eef2f7;border-radius:11px;margin-bottom:6px;">
+                            <div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;">
                                 <span class="subject-tag" :style="{background: getSubjectColor(item.subject_name) + '20', color: getSubjectColor(item.subject_name), borderColor: getSubjectColor(item.subject_name) + '66', flexShrink: 0}">{{ item.subject_name }}</span>
-                                <span style="flex:1;min-width:0;font-size:13px;font-weight:600;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.task_name }}</span>
-                                <button @click="deleteItem(day.dateKey, item.template_id)" style="padding:1px 6px;font-size:11px;background:#fff;border:1px solid #dbe1ea;border-radius:7px;color:#94a3b8;cursor:pointer;flex-shrink:0;" title="删除这条记录">✕</button>
+                                <span style="min-width:0;font-size:12px;font-weight:600;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.task_name }}</span>
+                                <span style="font-size:12px;font-weight:700;color:#667eea;white-space:nowrap;">{{ item.duration }}分</span>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;">
-                                <span style="font-size:12px;font-weight:700;color:#667eea;white-space:nowrap;">{{ item.duration }}分钟</span>
-                                <span v-if="item.expected_duration" :class="getCompareClass(item)" style="font-size:11px;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ getCompareText(item) }}</span>
-                                <span v-else style="font-size:11px;color:#94a3b8;">&nbsp;</span>
-                            </div>
-                            <div v-if="item.is_abnormal || item.abnormal_note" style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:#64748b;line-height:1.4;">
-                                <span v-if="item.is_abnormal" style="color:#f56c6c;font-weight:700;white-space:nowrap;">⚠️ 异常</span>
-                                <span v-if="item.abnormal_note" style="flex:1;min-width:0;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" @click="showAbnormalNote(item)" :title="item.abnormal_note">📝 {{ item.abnormal_note }}</span>
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                                <span v-if="item.expected_duration" :class="getCompareClass(item)" :style="{fontSize:'11px',padding:'2px 8px',borderRadius:'999px',background:getCompareClass(item)==='slow' ? '#fff7ed' : (getCompareClass(item)==='fast' ? '#eff6ff' : '#f1f5f9'),color:getCompareClass(item)==='slow' ? '#c2410c' : (getCompareClass(item)==='fast' ? '#1d4ed8' : '#64748b'),fontWeight:'700'}">{{ getCompareText(item) }}</span>
+                                <span v-if="item.expected_duration" style="font-size:11px;padding:2px 7px;border-radius:999px;background:#f8fafc;color:#64748b;">预期 {{ item.expected_duration }}分</span>
+                                <span v-if="item.average_duration" style="font-size:11px;padding:2px 7px;border-radius:999px;background:#f8fafc;color:#64748b;">平均 {{ item.average_duration }}分</span>
+                                <span v-if="item.is_abnormal" style="font-size:11px;padding:2px 8px;border-radius:999px;background:#fef2f2;color:#dc2626;font-weight:700;">异常</span>
+                                <span v-if="item.abnormal_note" style="font-size:11px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#64748b;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" @click="showAbnormalNote(item)" :title="item.abnormal_note">备注 {{ item.abnormal_note.length > 8 ? item.abnormal_note.slice(0, 8) + '…' : item.abnormal_note }}</span>
+                                <button @click="deleteItem(day.dateKey, item.template_id)" style="margin-left:auto;padding:2px 6px;font-size:10px;background:#fff;border:1px solid #e5e7eb;border-radius:999px;color:#94a3b8;cursor:pointer;line-height:1;" title="删除这条记录">✕</button>
                             </div>
                         </div>
                     </div>
@@ -589,11 +609,11 @@
         <!-- 孩子信息对话框 -->
         <div class="dialog-overlay" v-if="showChildDialog">
             <div class="dialog" style="max-width:380px;max-height:82vh;padding:18px;" @click.stop>
-                <div class="dialog-title" style="margin-bottom:14px;">👤 孩子信息</div>
+                <div class="dialog-title" style="margin-bottom:14px;">{{ childDialogMode === 'create' ? '➕ 添加孩子' : '👤 孩子信息' }}</div>
                 
                 <div style="text-align:center;margin-bottom:14px;">
                     <div @click="triggerAvatarUpload" style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;margin:0 auto 8px;" title="点击上传头像">
-                        <img v-if="childAvatar" :src="childAvatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
+                        <img v-if="childAvatarDraft" :src="childAvatarDraft" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/>
                         <span v-else style="color:white;">{{ childForm.gender === '男' ? '👦' : '👧' }}</span>
                     </div>
                     <div style="font-size:11px;color:#999;">点击头像上传</div>
@@ -646,8 +666,8 @@
                     </div>
                 </div>
                 <div class="dialog-buttons" style="margin-top:16px;gap:8px;">
-                    <button class="btn btn-secondary" @click="showChildDialog = false" style="padding:10px;font-size:13px;">取消</button>
-                    <button class="btn btn-primary" @click="createChild" style="padding:10px;font-size:13px;">保存</button>
+                    <button class="btn btn-secondary" @click="showChildDialog = false; childAvatarDraft = childAvatar" style="padding:10px;font-size:13px;">取消</button>
+                    <button class="btn btn-primary" @click="createChild" style="padding:10px;font-size:13px;">{{ childDialogMode === 'create' ? '创建孩子' : '保存' }}</button>
                 </div>
             </div>
         </div>
@@ -688,8 +708,8 @@
                         <span style="color:#f56c6c;">此操作不可恢复！</span>
                     </div>
                     <div v-if="resetType === 'all'">
-                        <strong>🔄 重置全部数据</strong><br/>
-                        这将删除所有数据（历史记录 + 当天作业），孩子信息和心情会保留。<br/>
+                        <strong>🔄 重置所有孩子学习数据</strong><br/>
+                        这将清空全部孩子的历史记录和当天作业，孩子资料、头像和心情会保留。<br/>
                         <span style="color:#f56c6c;">此操作不可恢复！</span>
                     </div>
                 </div>
@@ -849,6 +869,7 @@
                             <div><strong>今日作业：</strong>{{ importPreview.todayCount }} 项</div>
                             <div><strong>历史记录：</strong>{{ importPreview.historyDays }} 天 / {{ importPreview.historyItems }} 条</div>
                             <div><strong>科目配置：</strong>{{ importPreview.subjectCount }} 个科目</div>
+                            <div><strong>孩子数量：</strong>{{ importPreview.childrenCount || 1 }} 个</div>
                             <div><strong>备份版本：</strong>{{ importPreview.appVersion || importPreview.schemaVersion || '旧版备份' }}</div>
                         </div>
                         <div style="margin-top:10px;">
@@ -881,7 +902,7 @@
                         <button class="btn btn-secondary" @click="showResetConfirm('history')" style="flex:1;font-size:12px;">📜 清空历史</button>
                         <button class="btn btn-secondary" @click="showResetConfirm('today')" style="flex:1;font-size:12px;">📝 清空当天</button>
                     </div>
-                    <button class="btn btn-secondary" @click="showResetConfirm('all')" style="width:100%;font-size:12px;">🔄 重置全部</button>
+                    <button class="btn btn-secondary" @click="showResetConfirm('all')" style="width:100%;font-size:12px;">🔄 重置所有孩子数据</button>
                 </div>
                 
                 <div style="padding:10px;background:#fff3cd;border-radius:6px;font-size:11px;color:#856404;margin-bottom:15px;">
@@ -901,7 +922,7 @@
                 <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
                     <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e2e8f0;">
                         <div style="font-weight:bold;color:#667eea;font-size:16px;margin-bottom:5px;">📚 学习进度监督 - 完整使用文档</div>
-                        <div style="color:#64748b;font-size:12px;">版本：v2.1.4 | 最后更新：2026年3月20日</div>
+                        <div style="color:#64748b;font-size:12px;">版本：v3.0 | 最后更新：2026年3月20日</div>
                     </div>
 
                     <!-- 快速入门 -->
@@ -909,6 +930,7 @@
                         <div style="font-weight:bold;color:#667eea;margin-bottom:10px;font-size:14px;">🚀 快速入门</div>
                         <ol style="margin-left:20px;">
                             <li style="margin-bottom:5px;">点击「设置」→「✏️ 编辑孩子信息」，填写孩子出生日期、姓名、性别，系统会自动计算年龄和年级（可手动调整）</li>
+                            <li style="margin-bottom:5px;">如有两个孩子，可在设置页继续添加孩子；每个孩子的资料、作业、历史、报告都会独立保存</li>
                             <li style="margin-bottom:5px;">（可选）进入科目配置，添加/编辑需要的科目和对应作业模板</li>
                             <li style="margin-bottom:5px;">回到首页，点击右上角「+」按钮，勾选今日要完成的作业，点击「布置作业」</li>
                             <li style="margin-bottom:5px;">孩子完成每一项作业后，在对应输入框填写实际用时，点击「提交」</li>
@@ -950,8 +972,8 @@
                         <ul style="margin-left:15px;">
                             <li><strong>自定义科目</strong>：支持无限添加科目，可自定义名称、Emoji图标、主题颜色，不需要的科目可删除，自动适配所有功能页面</li>
                             <li><strong>作业模板配置</strong>：每个科目单独配置作业名称和预计完成时间，修改后即时生效</li>
-                            <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）</li>
-                            <li><strong>数据安全</strong>：支持一键备份/恢复数据、真实导出 Excel 统计报表，并自动保存到本地存储，多种重置选项满足不同需求</li>
+                            <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）；V3.0 已支持多孩子独立管理</li>
+                            <li><strong>数据安全</strong>：支持一键备份/恢复数据、真实导出 Excel 统计报表，并自动保存到本地存储；多孩子备份会一起打包，恢复预览可显示孩子数量</li>
                         </ul>
                     </div>
 
@@ -1130,11 +1152,19 @@
                 const currentChild = ref(null);
                 const childMood = ref('normal');
                 const childAvatar = ref('');
+                const childAvatarDraft = ref('');
+                const childrenList = ref([]);
+                const currentChildId = ref('');
+                const childDialogMode = ref('edit');
                 const showHomeworkSelector = ref(false);
                 const showChildDialog = ref(false);
                 const showMoodDialog = ref(false);
                 const showHistoryDialog = ref(false);
-                                const historyList = ref([]);
+                const historyList = ref([]);
+                const CHILDREN_LIST_KEY = 'childrenList';
+                const CHILDREN_DATA_KEY = 'childrenData';
+                const CURRENT_CHILD_ID_KEY = 'currentChildId';
+                const defaultChildForm = () => ({ child_name: '', age: 10, grade: '', gender: '男', birthdate: '' });
                 // 按日期降序排序的历史记录（最新的在前）
                 const sortedHistoryList = computed(() => {
                     return [...historyList.value].sort((a, b) => {
@@ -1143,7 +1173,7 @@
                 });
                 const toastMsg = ref('');
                 const toastClass = ref('toast-success');
-                const childForm = ref({ child_name: '', age: 10, grade: '', gender: '男', birthdate: '' });
+                const childForm = ref(defaultChildForm());
                 const gradeOptions = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级', '初一', '初二', '初三', '高一', '高二', '高三'];
                 const showAbnormalNoteDialog = ref(false);
                 const abnormalNoteForm = ref('');
@@ -1284,15 +1314,136 @@
                 const savedAvatar = localStorage.getItem('childAvatar');
                 const savedHistory = localStorage.getItem('homeworkHistory');
                 const savedChildForm = localStorage.getItem('childForm');
-                if (savedChild) currentChild.value = safeParse('currentChild', null);
-                if (savedMood) childMood.value = savedMood;
-                if (savedAvatar) childAvatar.value = savedAvatar;
-                if (savedHistory) historyList.value = safeParse('homeworkHistory', []);
-                if (savedChildForm) {
-                    try {
-                        childForm.value = JSON.parse(savedChildForm);
-                    } catch (e) {
-                        console.error('childForm 加载失败', e);
+                const persistLegacySnapshot = () => {
+                    if (currentChild.value) {
+                        localStorage.setItem('currentChild', JSON.stringify(currentChild.value));
+                    } else {
+                        localStorage.removeItem('currentChild');
+                    }
+                    localStorage.setItem('childMood', childMood.value || 'normal');
+                    if (childAvatar.value) {
+                        localStorage.setItem('childAvatar', childAvatar.value);
+                    } else {
+                        localStorage.removeItem('childAvatar');
+                    }
+                    localStorage.setItem('todayHomework', JSON.stringify(todayList.value || []));
+                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value || []));
+                    localStorage.setItem('childForm', JSON.stringify(childForm.value || defaultChildForm()));
+                };
+                const getChildrenDataMap = () => safeParse(CHILDREN_DATA_KEY, {}) || {};
+                const persistChildrenMeta = () => {
+                    localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
+                    if (currentChildId.value) {
+                        localStorage.setItem(CURRENT_CHILD_ID_KEY, currentChildId.value);
+                    } else {
+                        localStorage.removeItem(CURRENT_CHILD_ID_KEY);
+                    }
+                };
+                const updateChildSummary = (childId, profile, avatar = childAvatar.value) => {
+                    if (!childId || !profile) return;
+                    const summary = {
+                        id: childId,
+                        child_name: profile.child_name || '未命名',
+                        grade: profile.grade || '',
+                        age: profile.age || '',
+                        gender: profile.gender || '男',
+                        avatar: avatar || '',
+                        updatedAt: Date.now()
+                    };
+                    const index = childrenList.value.findIndex(item => item.id === childId);
+                    if (index >= 0) {
+                        childrenList.value[index] = { ...childrenList.value[index], ...summary };
+                    } else {
+                        childrenList.value.push(summary);
+                    }
+                    persistChildrenMeta();
+                };
+                const persistActiveChildData = () => {
+                    if (!currentChildId.value) {
+                        persistLegacySnapshot();
+                        return;
+                    }
+                    const dataMap = getChildrenDataMap();
+                    dataMap[currentChildId.value] = {
+                        currentChild: currentChild.value,
+                        childForm: childForm.value,
+                        childMood: childMood.value,
+                        childAvatar: childAvatar.value,
+                        todayHomework: todayList.value,
+                        homeworkHistory: historyList.value
+                    };
+                    localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
+                    updateChildSummary(currentChildId.value, currentChild.value || childForm.value || defaultChildForm(), childAvatar.value);
+                    persistLegacySnapshot();
+                };
+                const applyChildData = (childId) => {
+                    const dataMap = getChildrenDataMap();
+                    const data = dataMap[childId] || {};
+                    currentChildId.value = childId || '';
+                    currentChild.value = data.currentChild || null;
+                    childForm.value = data.childForm || data.currentChild || defaultChildForm();
+                    childMood.value = data.childMood || 'normal';
+                    childAvatar.value = data.childAvatar || '';
+                    childAvatarDraft.value = childAvatar.value;
+                    todayList.value = Array.isArray(data.todayHomework) ? data.todayHomework : [];
+                    historyList.value = Array.isArray(data.homeworkHistory) ? data.homeworkHistory : [];
+                    persistChildrenMeta();
+                    persistLegacySnapshot();
+                };
+                const selectChild = (childId) => {
+                    if (!childId || childId === currentChildId.value) return;
+                    persistActiveChildData();
+                    applyChildData(childId);
+                    loadData();
+                    if (currentTab.value === 'report') {
+                        setTimeout(() => {
+                            renderTrendChart();
+                            renderPieCharts();
+                        }, 100);
+                    }
+                };
+                const createInitialChildFromLegacy = () => {
+                    if (!savedChild) return;
+                    const legacyChild = safeParse('currentChild', null);
+                    if (!legacyChild) return;
+                    const legacyForm = savedChildForm ? safeParse('childForm', legacyChild) : legacyChild;
+                    const childId = 'child_' + Date.now();
+                    childrenList.value = [{
+                        id: childId,
+                        child_name: legacyChild.child_name || '未命名',
+                        grade: legacyChild.grade || '',
+                        age: legacyChild.age || '',
+                        gender: legacyChild.gender || '男',
+                        avatar: savedAvatar || '',
+                        updatedAt: Date.now()
+                    }];
+                    const dataMap = {};
+                    dataMap[childId] = {
+                        currentChild: legacyChild,
+                        childForm: legacyForm || legacyChild,
+                        childMood: savedMood || 'normal',
+                        childAvatar: savedAvatar || '',
+                        todayHomework: safeParse('todayHomework', []),
+                        homeworkHistory: safeParse('homeworkHistory', [])
+                    };
+                    localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
+                    localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
+                    localStorage.setItem(CURRENT_CHILD_ID_KEY, childId);
+                    applyChildData(childId);
+                };
+                const savedChildrenList = safeParse(CHILDREN_LIST_KEY, []);
+                const savedCurrentChildId = localStorage.getItem(CURRENT_CHILD_ID_KEY) || '';
+                if (Array.isArray(savedChildrenList) && savedChildrenList.length > 0) {
+                    childrenList.value = savedChildrenList;
+                    applyChildData(savedCurrentChildId || savedChildrenList[0].id);
+                } else {
+                    createInitialChildFromLegacy();
+                    if (!savedChild && savedChildForm) {
+                        try {
+                            childForm.value = JSON.parse(savedChildForm);
+                        } catch (e) {
+                            console.error('childForm 加载失败', e);
+                        }
                     }
                 }
                 const savedLastSync = localStorage.getItem('lastSyncTime');
@@ -1353,13 +1504,13 @@
                                         items: doneItems
                                     };
                                     historyList.value.unshift(archive);
-                                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                                    persistActiveChildData();
                                     console.log('已自动归档昨天的数据');
                                 }
                                 
                                 // 清空今天的作业（因为已经是昨天的数据了）
                                 todayList.value = [];
-                                localStorage.removeItem('todayHomework');
+                                persistActiveChildData();
                                 console.log('已清空昨天的作业数据');
                                 return;
                             }
@@ -1484,7 +1635,7 @@
                 };
 
                 const saveMood = () => {
-                    localStorage.setItem('childMood', childMood.value);
+                    persistActiveChildData();
                 };
                 
                 // 自动计算年龄和年级
@@ -1705,7 +1856,7 @@
                         status: 'doing',
                         duration: ''
                     }));
-                    localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                    persistActiveChildData();
                     showHomeworkSelector.value = false;
                     showToast('已布置 ' + selectedCount.value + ' 项作业', 'success');
                 };
@@ -1736,14 +1887,14 @@
                     } else {
                         historyList.value.unshift(archive);
                     }
-                    localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                    persistActiveChildData();
                 };
 
                 const resetHomework = () => {
                     archiveToday();
                     todayList.value = [];
                     homeworkList.value.forEach(h => h.selected = false);
-                    localStorage.removeItem('todayHomework');
+                    persistActiveChildData();
                     showToast('已归档并清空', 'success');
                 };
 
@@ -1870,9 +2021,10 @@
                 
                 // 导出数据到文件
                 const exportData = async () => {
+                    persistActiveChildData();
                     const data = {
-                        schemaVersion: 2,
-                        appVersion: '2.1.4',
+                        schemaVersion: 3,
+                        appVersion: '3.0',
                         version: '1.0',
                         exportTime: new Date().toISOString(),
                         data: {
@@ -1883,7 +2035,10 @@
                             todayHomework: todayList.value,
                             homeworkHistory: historyList.value,
                             subjectConfig: subjectConfig.value,
-                            customSubjects: localStorage.getItem('customSubjects')
+                            customSubjects: localStorage.getItem('customSubjects'),
+                            childrenList: childrenList.value,
+                            childrenData: getChildrenDataMap(),
+                            currentChildId: currentChildId.value
                         }
                     };
                     const jsonStr = JSON.stringify(data, null, 2);
@@ -1983,33 +2138,30 @@
                 // 删除单条作业记录
                 const deleteItem = (dateKey, templateId) => {
                     if (!confirm('确定删除这条记录吗？')) return;
-                    const history = JSON.parse(localStorage.getItem("homeworkHistory") || "[]");
+                    const history = [...historyList.value];
                     const day = history.find(d => d.dateKey === dateKey);
                     if (day) {
                         day.items = day.items.filter(item => item.template_id !== templateId);
-                        // 如果这天没有作业了，删除这天
                         if (day.items.length === 0) {
                             const idx = history.findIndex(d => d.dateKey === dateKey);
                             if (idx >= 0) history.splice(idx, 1);
                         }
-                        localStorage.setItem("homeworkHistory", JSON.stringify(history));
-                        showToast('已删除', 'success');
-                        // 直接更新响应式数据，立即刷新显示
                         historyList.value = history;
+                        persistActiveChildData();
+                        showToast('已删除', 'success');
                     }
                 };
 
                 // 删除整天的记录
                 const deleteDay = (dateKey) => {
                     if (!confirm('确定删除这天的所有记录吗？')) return;
-                    const history = JSON.parse(localStorage.getItem("homeworkHistory") || "[]");
+                    const history = [...historyList.value];
                     const idx = history.findIndex(d => d.dateKey === dateKey);
                     if (idx >= 0) {
                         history.splice(idx, 1);
-                        localStorage.setItem("homeworkHistory", JSON.stringify(history));
-                        showToast('已删除这天记录', 'success');
-                        // 直接更新响应式数据，立即刷新显示
                         historyList.value = history;
+                        persistActiveChildData();
+                        showToast('已删除这天记录', 'success');
                     }
                 };
                 // 渲染报告页饼图
@@ -2043,11 +2195,11 @@
                                             position: 'bottom',
                                             align: 'center',
                                             labels: {
-                                                padding: 15,
+                                                padding: 10,
                                                 usePointStyle: true,
-                                                boxWidth: 12,
-                                                font: { size: 11 },
-                                                textWidth: 120,
+                                                boxWidth: 10,
+                                                font: { size: 10 },
+                                                textWidth: 110,
                                                 generateLabels: function(chart) {
                                                     const data = chart.data;
                                                     if (data.labels.length && data.datasets.length) {
@@ -2113,11 +2265,11 @@
                                             position: 'bottom',
                                             align: 'center',
                                             labels: {
-                                                padding: 15,
+                                                padding: 10,
                                                 usePointStyle: true,
-                                                boxWidth: 12,
-                                                font: { size: 11 },
-                                                textWidth: 120,
+                                                boxWidth: 10,
+                                                font: { size: 10 },
+                                                textWidth: 110,
                                                 generateLabels: function(chart) {
                                                     const data = chart.data;
                                                     if (data.labels.length && data.datasets.length) {
@@ -2169,7 +2321,10 @@
                         todayHomework: Array.isArray(data?.todayHomework) ? data.todayHomework : [],
                         homeworkHistory: Array.isArray(data?.homeworkHistory) ? data.homeworkHistory : [],
                         subjectConfig: (data?.subjectConfig && typeof data.subjectConfig === 'object') ? data.subjectConfig : null,
-                        customSubjects: data?.customSubjects || null
+                        customSubjects: data?.customSubjects || null,
+                        childrenList: Array.isArray(data?.childrenList) ? data.childrenList : [],
+                        childrenData: (data?.childrenData && typeof data.childrenData === 'object') ? data.childrenData : null,
+                        currentChildId: data?.currentChildId || ''
                     };
                 };
 
@@ -2200,7 +2355,8 @@
                         historyItems,
                         subjectCount,
                         schemaVersion: payload.schemaVersion,
-                        appVersion: payload.appVersion
+                        appVersion: payload.appVersion,
+                        childrenCount: Array.isArray(payload.childrenList) && payload.childrenList.length > 0 ? payload.childrenList.length : (payload.currentChild ? 1 : 0)
                     };
                 };
 
@@ -2211,21 +2367,22 @@
                 };
 
                 const applyImportPayload = (payload) => {
-                    if (payload.currentChild) {
+                    if (payload.childrenList && payload.childrenList.length > 0 && payload.childrenData) {
+                        childrenList.value = payload.childrenList;
+                        localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
+                        localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(payload.childrenData));
+                        const nextId = payload.currentChildId || payload.childrenList[0]?.id || '';
+                        applyChildData(nextId);
+                    } else if (payload.currentChild) {
+                        const nextId = currentChildId.value || ('child_' + Date.now());
+                        currentChildId.value = nextId;
                         currentChild.value = payload.currentChild;
-                        localStorage.setItem('currentChild', JSON.stringify(payload.currentChild));
-                    }
-                    if (payload.childForm) {
-                        childForm.value = payload.childForm;
-                        localStorage.setItem('childForm', JSON.stringify(payload.childForm));
-                    }
-                    if (payload.childMood) {
-                        childMood.value = payload.childMood;
-                        localStorage.setItem('childMood', payload.childMood);
-                    }
-                    if (payload.childAvatar) {
-                        childAvatar.value = payload.childAvatar;
-                        localStorage.setItem('childAvatar', payload.childAvatar);
+                        childForm.value = payload.childForm || payload.currentChild;
+                        childMood.value = payload.childMood || 'normal';
+                        childAvatar.value = payload.childAvatar || '';
+                        childAvatarDraft.value = childAvatar.value;
+                        updateChildSummary(nextId, currentChild.value, childAvatar.value);
+                        persistActiveChildData();
                     }
                     if (payload.subjectConfig) {
                         delete payload.subjectConfig.wuli;
@@ -2302,15 +2459,13 @@
                         if (importMode.value === 'replace') {
                             todayList.value = payload.todayHomework;
                             historyList.value = payload.homeworkHistory;
-                            localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
-                            localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
+                            persistActiveChildData();
                             addedHistoryDays = payload.homeworkHistory.length;
                             todayAction = payload.todayHomework.length > 0 ? `已覆盖 ${payload.todayHomework.length} 项` : '已清空并覆盖';
                         } else {
                             const existingHistoryDays = historyList.value.length;
                             const merged = mergeHistoryRecords(payload.homeworkHistory);
                             historyList.value = merged.mergedList;
-                            localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
                             addedHistoryDays = Math.max(merged.mergedList.length - existingHistoryDays, 0);
                             mergedHistoryItems = merged.mergedHistoryItems;
                             skippedDuplicates = merged.skippedDuplicates;
@@ -2325,7 +2480,7 @@
                                 }
                             });
                             todayList.value = Array.from(todayMap.values());
-                            localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                            persistActiveChildData();
                             todayAction = payload.todayHomework.length > 0 ? `已合并，当前 ${todayList.value.length} 项` : '无新增';
                         }
 
@@ -2475,18 +2630,15 @@
                 const saveAbnormalNote = () => {
                     if (currentEditItem.value) {
                         currentEditItem.value.abnormal_note = abnormalNoteForm.value;
-                        // 保存到当天作业
-                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
-                        // 同步到历史记录
                         const todayKey = formatLocalDateKey();
                         const dayIndex = historyList.value.findIndex(d => d.dateKey === todayKey);
                         if (dayIndex >= 0) {
                             const itemIndex = historyList.value[dayIndex].items.findIndex(i => i.template_id === currentEditItem.value.template_id);
                             if (itemIndex >= 0) {
                                 historyList.value[dayIndex].items[itemIndex].abnormal_note = abnormalNoteForm.value;
-                                localStorage.setItem('homeworkHistory', JSON.stringify(historyList.value));
                             }
                         }
+                        persistActiveChildData();
                         showToast('备注已保存', 'success');
                         showAbnormalNoteDialog.value = false;
                     }
@@ -2580,7 +2732,7 @@
                     if (avgDuration && isAbnormal(parseInt(item.duration), avgDuration)) {
                         item.is_abnormal = true;
                         item.average_duration = avgDuration;
-                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                        persistActiveChildData();
                         // 自动弹出异常备注对话框
                         currentEditItem.value = item;
                         abnormalNoteForm.value = item.abnormal_note || '';
@@ -2588,7 +2740,7 @@
                     } else {
                         item.is_abnormal = false;
                         item.average_duration = avgDuration;
-                        localStorage.setItem('todayHomework', JSON.stringify(todayList.value));
+                        persistActiveChildData();
                         showToast('提交成功！太棒了！', 'success');
                     }
                     
@@ -2780,23 +2932,25 @@
                 // 确认重置
                 const confirmReset = () => {
                     if (resetType.value === 'history') {
-                        // 清空历史记录
                         historyList.value = [];
-                        localStorage.removeItem('homeworkHistory');
+                        persistActiveChildData();
                         showToast('历史记录已清空', 'success');
                     } else if (resetType.value === 'today') {
-                        // 清空当天作业
                         todayList.value = [];
                         homeworkList.value.forEach(h => h.selected = false);
-                        localStorage.removeItem('todayHomework');
+                        persistActiveChildData();
                         showToast('当天作业已清空', 'success');
                     } else if (resetType.value === 'all') {
-                        // 重置全部：清空数据+恢复默认科目
+                        const dataMap = getChildrenDataMap();
+                        Object.keys(dataMap).forEach(key => {
+                            dataMap[key].todayHomework = [];
+                            dataMap[key].homeworkHistory = [];
+                        });
+                        localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
                         historyList.value = [];
                         todayList.value = [];
                         homeworkList.value.forEach(h => h.selected = false);
-                        localStorage.removeItem('homeworkHistory');
-                        localStorage.removeItem('todayHomework');
+                        persistActiveChildData();
                         // 恢复默认科目
                         localStorage.removeItem('customSubjects');
                         localStorage.removeItem('subjectConfig');
@@ -2828,7 +2982,15 @@
                     showDataDialog.value = false;
                 };
 
+                const startAddChild = () => {
+                    childDialogMode.value = 'create';
+                    childForm.value = defaultChildForm();
+                    childAvatarDraft.value = '';
+                    showChildDialog.value = true;
+                };
+
                 const editChild = () => {
+                    childDialogMode.value = 'edit';
                     if (currentChild.value) {
                         childForm.value = {
                             child_name: currentChild.value.child_name,
@@ -2837,8 +2999,10 @@
                             gender: currentChild.value.gender,
                             birthdate: childForm.value.birthdate || ''
                         };
+                        childAvatarDraft.value = childAvatar.value || '';
                     } else {
-                        childForm.value = { child_name: '', age: 10, grade: '', gender: '男' };
+                        childForm.value = defaultChildForm();
+                        childAvatarDraft.value = '';
                     }
                     showChildDialog.value = true;
                 };
@@ -2853,21 +3017,27 @@
                         showToast('请输入姓名', 'error');
                         return;
                     }
-                    // 深拷贝数据确保响应式更新
-                    currentChild.value = JSON.parse(JSON.stringify(childForm.value));
-                    // 强制保存到localStorage
-                    localStorage.setItem('currentChild', JSON.stringify(currentChild.value));
-                    localStorage.setItem('childForm', JSON.stringify(childForm.value));
-                    if (childAvatar.value) {
-                        localStorage.setItem('childAvatar', childAvatar.value);
+                    const nextChild = JSON.parse(JSON.stringify(childForm.value));
+                    if (childDialogMode.value === 'create' || !currentChildId.value) {
+                        const targetId = 'child_' + Date.now();
+                        currentChildId.value = targetId;
+                        currentChild.value = nextChild;
+                        childAvatar.value = childAvatarDraft.value || '';
+                        childMood.value = 'normal';
+                        todayList.value = [];
+                        historyList.value = [];
+                        homeworkList.value.forEach(h => h.selected = false);
+                        updateChildSummary(targetId, nextChild, childAvatar.value);
+                    } else {
+                        const targetId = currentChildId.value;
+                        currentChild.value = nextChild;
+                        childAvatar.value = childAvatarDraft.value || '';
+                        updateChildSummary(targetId, nextChild, childAvatar.value);
                     }
-                    showToast('保存成功！', 'success');
-                    // 立即关闭对话框
+                    persistActiveChildData();
+                    showToast(childDialogMode.value === 'create' ? '孩子已创建' : '保存成功！', 'success');
                     showChildDialog.value = false;
-                    // 重置表单
-                    childForm.value = { child_name: '', age: 10, grade: '', gender: '男' };
-                    // 强制刷新页面数据
-                    setTimeout(() => window.location.reload(), 200);
+                    loadData();
                 };
                 
                 // 显示统计图表
@@ -2938,10 +3108,10 @@
                                     position: 'top',
                                     labels: {
                                         font: {
-                                            size: 12,
+                                            size: 11,
                                             weight: 'bold'
                                         },
-                                        padding: 20,
+                                        padding: 12,
                                         usePointStyle: true,
                                         pointStyle: 'circle'
                                     }
@@ -3061,10 +3231,10 @@
                                     position: 'top',
                                     labels: {
                                         font: {
-                                            size: 12,
+                                            size: 11,
                                             weight: 'bold'
                                         },
-                                        padding: 20,
+                                        padding: 12,
                                         usePointStyle: true,
                                         pointStyle: 'circle'
                                     }
@@ -3177,12 +3347,20 @@
                         
                         // 压缩图片
                         const compressedDataUrl = await compressImage(file, 200, 0.7);
-                        childAvatar.value = compressedDataUrl;
-                        localStorage.setItem('childAvatar', compressedDataUrl);
+                        if (showChildDialog.value) {
+                            childAvatarDraft.value = compressedDataUrl;
+                        } else {
+                            childAvatar.value = compressedDataUrl;
+                            persistActiveChildData();
+                        }
                         showToast('头像已保存', 'success');
                     };
                     input.click();
                 };
+
+                watch([currentChild, childForm, childMood, childAvatar, todayList, historyList], () => {
+                    persistActiveChildData();
+                }, { deep: true });
 
                 onMounted(() => {
                     // 页面加载时强制关闭所有弹窗
@@ -3210,7 +3388,7 @@
                 });
 
                 return {
-                    homeworkList, todayList, currentChild, childMood, childAvatar, showHomeworkSelector, showChildDialog, showMoodDialog, showHistoryDialog, historyList, sortedHistoryList, toastMsg, toastClass, childForm,
+                    homeworkList, todayList, currentChild, childMood, childAvatar, childAvatarDraft, childrenList, currentChildId, childDialogMode, showHomeworkSelector, showChildDialog, showMoodDialog, showHistoryDialog, historyList, sortedHistoryList, toastMsg, toastClass, childForm,
                     showAbnormalNoteDialog, abnormalNoteForm, currentEditItem, showDataDialog, showHelpDialog, importPreview, importMode, importResult,
                     showResetDialog, resetType,
                     showSubjectEditDialog, showStatsDialog, statsSummary,
@@ -3222,7 +3400,7 @@
                     showStatsChart, renderTrendChart, renderPieCharts, calculateAgeAndGrade, addNewSubject, saveNewSubject, deleteSubject, exportExcel, subjectList, showAddSubjectDialog, newSubjectForm, commonEmojis, getUnusedColor,
                     exportData, importData, clearImportPreview, confirmImport,
                     showResetConfirm, confirmReset,
-                    loadData, assignHomework, resetHomework, submit, createChild, editChild, setDuration, quickAdjustDuration, quickSubmit, syncDuration, deleteItem, deleteDay
+                    loadData, assignHomework, resetHomework, submit, createChild, editChild, startAddChild, selectChild, setDuration, quickAdjustDuration, quickSubmit, syncDuration, deleteItem, deleteDay
                 };
             }
         }).mount('#app');

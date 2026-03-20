@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.leilei.studytracker"
-        version="2.1.4"
-        android-versionCode="214"
+        version="3.0"
+        android-versionCode="300"
         xmlns="http://www.w3.org/ns/widgets"
         xmlns:cdv="http://cordova.apache.org/ns/1.0">
 

@@ -1,4 +1,5 @@
 @echo off
+title StudyTracker-Mobile 一键上传（自动识别版本）
 cd /d "%~dp0"
 
 where python >nul 2>nul

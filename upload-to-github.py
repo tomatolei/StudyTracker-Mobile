@@ -18,7 +18,6 @@ TRACKED_PATHS = [
     "upload-to-github.bat",
     "upload-to-github.py",
     "www",
-    "更新日志-本次修复.md",
 ]
 
 
@@ -69,7 +68,7 @@ def main() -> int:
     config_file = repo / "config.xml"
 
     print("========================================")
-    print("  StudyTracker-Mobile 一键提交到 GitHub")
+    print("  StudyTracker-Mobile 一键提交到 GitHub（自动识别版本）")
     print("========================================")
     print()
 
