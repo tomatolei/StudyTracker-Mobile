@@ -1,8 +1,10 @@
 name: Build Signed Android APK
 
 env:
-  APP_VERSION: 3.0
-  APP_VERSION_CODE: 300
+  APP_VERSION: 3.1
+  APP_VERSION_CODE: 310
+  ANDROID_API_LEVEL: 34
+  ANDROID_BUILD_TOOLS: 34.0.0
 
 on:
   workflow_dispatch:
@@ -42,8 +44,8 @@ jobs:
       run: |
         yes | sdkmanager --licenses
         sdkmanager "platform-tools"
-        sdkmanager "platforms;android-36"
-        sdkmanager "build-tools;36.0.0"
+        sdkmanager "platforms;android-${{ env.ANDROID_API_LEVEL }}"
+        sdkmanager "build-tools;${{ env.ANDROID_BUILD_TOOLS }}"
 
     - name: Restore Keystore
       run: |
@@ -52,9 +54,13 @@ jobs:
     - name: Install npm dependencies
       run: npm install
 
-    - name: Add Android platform if missing
+    - name: Ensure Android platform is installed
       run: |
-        cordova platform add android@12 || true
+        if [ ! -d "platforms/android" ]; then
+          cordova platform add android@12
+        else
+          echo "Android platform already exists, skip add."
+        fi
 
     - name: Build Signed APK
       run: |

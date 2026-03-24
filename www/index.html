@@ -178,9 +178,11 @@
 
             <!-- 今日概览 -->
             <div class="stats-card" style="padding:14px;">
-                <div class="stats-title" style="margin-bottom:8px;">
+                <div class="stats-title" style="margin-bottom:8px;align-items:center;">
                     <span>✨ 今日概览</span>
-                    <span style="font-size:10px;color:#64748b;">近 7 天 {{ recentStudyDays }} 天</span>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <span style="font-size:10px;color:#64748b;">近 7 天 {{ recentStudyDays }} 天</span>
+                    </div>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
                     <div style="min-width:0;padding:12px 11px;border-radius:15px;background:linear-gradient(135deg,#eef2ff 0%,#e9d5ff 100%);border:1px solid rgba(102,126,234,0.12);box-shadow:0 3px 10px rgba(102,126,234,0.08);">
@@ -243,35 +245,6 @@
                 </div>
             </div>
 
-            <!-- 今日统计 -->
-            <div class="stats-card" style="padding:16px;">
-                <div class="stats-title">
-                    <span>📊 今日统计</span>
-                    <div style="display:flex;gap:5px;">
-                        <button class="btn btn-secondary" style="padding:5px 10px;font-size:12px;" @click="showHistoryDialog = true">📜</button>
-                        <button class="btn btn-secondary" style="padding:5px 10px;font-size:12px;" @click="showHomeworkSelector = true">➕</button>
-                    </div>
-                </div>
-                <div class="stats-grid" style="gap:8px;">
-                    <div class="stat-item" style="padding:12px 6px;border-radius:14px;">
-                        <div class="stat-value" style="font-size:20px;">{{ totalCount }}</div>
-                        <div class="stat-label">总作业</div>
-                    </div>
-                    <div class="stat-item" style="padding:12px 6px;border-radius:14px;">
-                        <div class="stat-value" style="font-size:20px;color:#67c23a;">{{ doneCount }}</div>
-                        <div class="stat-label">已完成</div>
-                    </div>
-                    <div class="stat-item" style="padding:12px 6px;border-radius:14px;">
-                        <div class="stat-value" style="font-size:20px;color:#e6a23c;">{{ doingCount }}</div>
-                        <div class="stat-label">进行中</div>
-                    </div>
-                    <div class="stat-item" style="padding:12px 6px;border-radius:14px;">
-                        <div class="stat-value" style="font-size:20px;">{{ totalDuration }}</div>
-                        <div class="stat-label">总用时</div>
-                    </div>
-                </div>
-            </div>
-
             <!-- 今日作业列表 -->
             <div class="homework-section" style="padding:16px;">
                 <div class="section-title" style="margin-bottom:12px;">📝 今日作业</div>
@@ -282,7 +255,7 @@
                 </div>
                 
                 <div class="homework-list" v-else>
-                    <div class="homework-item" :class="item.status" v-for="item in todayList" :key="item.template_id">
+                    <div class="homework-item" :class="item.status" v-for="item in sortedTodayList" :key="item.template_id" :data-homework-id="item.template_id">
                         <div class="homework-header">
                             <span class="subject-tag" :style="{background: getSubjectColor(item.subject_name) + '20', color: getSubjectColor(item.subject_name), borderColor: getSubjectColor(item.subject_name) + '66'}">{{ item.subject_name }}</span>
                             <span class="homework-name">{{ item.task_name }}</span>
@@ -313,7 +286,7 @@
                             </div>
                             <!-- 输入框 + 提交 一行 -->
                             <div class="homework-input-row">
-                                <input type="number" v-model="item.duration" placeholder="输入用时(分钟)" min="1" max="300" style="flex:1;" @keyup.enter="submit(item)"/>
+                                <input type="number" :id="'duration-input-' + item.template_id" v-model="item.duration" placeholder="输入用时(分钟)" min="1" max="300" style="flex:1;" @focus="applySmartDurationDefault(item)" @keyup.enter="submit(item)"/>
                                 <button @click="submit(item)" :disabled="!item.duration" style="white-space:nowrap;padding:8px 16px;min-width:82px;">提交</button>
                             </div>
                         </div>
@@ -517,8 +490,8 @@
             <!-- 版本信息 -->
             <div style="background:white;border-radius:15px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
                 <div style="font-size:17px;font-weight:bold;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;background-clip: text;margin-bottom:6px;">📚 学习监督</div>
-                <div style="font-size:13px;color:#666;margin-bottom:3px;">版本 v3.0</div>
-                <div style="font-size:11px;color:#999;">更新时间 2026年3月20日</div>
+                <div style="font-size:13px;color:#666;margin-bottom:3px;">版本 v3.1</div>
+                <div style="font-size:11px;color:#999;">更新时间 2026年3月25日</div>
             </div>
         </div>
         <!-- 设置页面结束 -->
@@ -922,7 +895,7 @@
                 <div style="font-size:13px;line-height:1.8;color:#333;text-align:left;">
                     <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e2e8f0;">
                         <div style="font-weight:bold;color:#667eea;font-size:16px;margin-bottom:5px;">📚 学习进度监督 - 完整使用文档</div>
-                        <div style="color:#64748b;font-size:12px;">版本：v3.0 | 最后更新：2026年3月20日</div>
+                        <div style="color:#64748b;font-size:12px;">版本：v3.1 | 最后更新：2026年3月25日</div>
                     </div>
 
                     <!-- 快速入门 -->
@@ -930,11 +903,11 @@
                         <div style="font-weight:bold;color:#667eea;margin-bottom:10px;font-size:14px;">🚀 快速入门</div>
                         <ol style="margin-left:20px;">
                             <li style="margin-bottom:5px;">点击「设置」→「✏️ 编辑孩子信息」，填写孩子出生日期、姓名、性别，系统会自动计算年龄和年级（可手动调整）</li>
-                            <li style="margin-bottom:5px;">如有两个孩子，可在设置页继续添加孩子；每个孩子的资料、作业、历史、报告都会独立保存</li>
-                            <li style="margin-bottom:5px;">（可选）进入科目配置，添加/编辑需要的科目和对应作业模板</li>
-                            <li style="margin-bottom:5px;">回到首页，点击右上角「+」按钮，勾选今日要完成的作业，点击「布置作业」</li>
-                            <li style="margin-bottom:5px;">孩子完成每一项作业后，在对应输入框填写实际用时，点击「提交」</li>
-                            <li>切换到「报告」页面，查看详细的学习统计、趋势分析和科目排行</li>
+                            <li style="margin-bottom:5px;">如有两个孩子，可在设置页继续添加孩子；每个孩子的资料、作业、历史、报告、科目模板都会独立保存</li>
+                            <li style="margin-bottom:5px;">（可选）进入科目配置，添加/编辑需要的科目和对应作业模板；现在每个孩子的默认科目模板、自定义科目互不影响</li>
+                            <li style="margin-bottom:5px;">回到首页，先看“今日提醒”第一条，再直接处理当前最该做的操作</li>
+                            <li style="margin-bottom:5px;">孩子完成每一项作业后，在对应输入框填写实际用时；如果输入框为空，系统会优先带入历史平均 / 预期时长</li>
+                            <li>首页今日作业会按未完成优先排序，提交成功后会自动跳到下一项，连续录入更顺手</li>
                         </ol>
                     </div>
 
@@ -944,10 +917,13 @@
                         
                         <div style="margin-bottom:10px;"><strong>【首页功能】</strong></div>
                         <ul style="margin-left:15px;margin-bottom:15px;">
+                            <li><strong>首页轻概览</strong>：保留更顺眼的轻量结构，只展示必要信息，不再重复堆统计块</li>
+                            <li><strong>今日提醒</strong>：第一条自动给出当前最该做的一步，减少来回判断</li>
                             <li><strong>孩子信息头</strong>：显示孩子姓名、年级、实时年龄、累计学习天数，点击头像可快速编辑信息</li>
                             <li><strong>今日心情记录</strong>：点击右侧表情图标选择当日心情，长期记录可观察学习状态波动</li>
-                            <li><strong>实时统计面板</strong>：实时更新总作业数、已完成/进行中数量、累计学习时长</li>
-                            <li><strong>作业列表</strong>：显示当日布置的所有作业，输入用时提交即可，异常用时会自动提示填写备注</li>
+                            <li><strong>快速操作入口</strong>：将选择作业、查看报告、查看历史、使用说明放在首页，减少来回切页</li>
+                            <li><strong>今日作业智能排序</strong>：未完成项自动排在前面，异常项优先，减少来回找项目</li>
+                            <li><strong>连续录入更顺手</strong>：提交成功后自动定位下一项未完成作业，适合连续记录</li>
                             <li><strong>当日完成历史</strong>：展示当天所有已完成作业的详细信息，包含用时对比、异常标记等</li>
                         </ul>
 
@@ -956,6 +932,7 @@
                             <li><strong>自定义作业模板</strong>：每个科目可自定义作业名称和预计完成时间，支持无限添加</li>
                             <li><strong>批量布置作业</strong>：一键勾选当天需要完成的作业，快速布置</li>
                             <li><strong>异常检测机制</strong>：提交作业时自动对比历史平均用时，偏离30%以上提示填写异常理由</li>
+                            <li><strong>智能默认时长</strong>：输入框为空时优先带入历史平均时长，没有平均值时再带入预期时长，不覆盖手动输入</li>
                             <li><strong>全局历史查询</strong>：支持查看所有历史完成记录，按日期分类展示</li>
                         </ul>
 
@@ -972,7 +949,8 @@
                         <ul style="margin-left:15px;">
                             <li><strong>自定义科目</strong>：支持无限添加科目，可自定义名称、Emoji图标、主题颜色，不需要的科目可删除，自动适配所有功能页面</li>
                             <li><strong>作业模板配置</strong>：每个科目单独配置作业名称和预计完成时间，修改后即时生效</li>
-                            <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）；V3.0 已支持多孩子独立管理</li>
+                            <li><strong>孩子信息管理</strong>：支持上传头像，输入出生日期自动计算年龄/年级，符合国内入学年龄标准，支持手动调整年级（适配上学早/晚、跳级等特殊情况）；V3.1 已支持多孩子独立管理</li>
+                            <li><strong>多孩子科目隔离</strong>：每个孩子独立保存默认科目模板和自定义科目，切换孩子不会互相影响</li>
                             <li><strong>数据安全</strong>：支持一键备份/恢复数据、真实导出 Excel 统计报表，并自动保存到本地存储；多孩子备份会一起打包，恢复预览可显示孩子数量</li>
                         </ul>
                     </div>
@@ -1046,7 +1024,9 @@
                             • 快捷按钮一键设置：点击「预期」快速填入预期时间，点击「平均」快速填入历史平均用时<br>
                             • 常用时间按钮：15/30/45/60 分钟常用时间一键选择，无需手动输入<br>
                             • 数字输入框：支持直接输入精确数值，与滑动条实时同步<br>
-                            使用技巧：优先点击「平均」或「预期」按钮，然后直接点提交，最快 2 步完成作业提交
+                            • 输入框为空时会优先带入历史平均时长，没有平均值时再带入预期时长，且不会覆盖手动输入<br>
+                            • 提交成功后自动跳到下一项未完成作业，适合连续快速录入<br>
+                            使用技巧：优先点击「平均」或「预期」按钮，或直接点进空输入框让系统自动带入，再点提交，最快 2 步完成作业提交
                         </p>
                     </div>
 
@@ -1140,9 +1120,18 @@
         <div class="toast" v-if="toastMsg" :class="toastClass">{{ toastMsg }}</div>
     </div>
 
-    <script src="cordova.js"></script>
     <script>
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        (function() {
+            const isCordovaLike = /(^|\/)android_asset\//i.test(location.pathname) || /(^|\/)www\//i.test(location.pathname) && /; wv\)/i.test(navigator.userAgent) || !!window.cordova;
+            if (isCordovaLike) {
+                const script = document.createElement('script');
+                script.src = 'cordova.js';
+                document.head.appendChild(script);
+            }
+        })();
+    </script>
+    <script>
+        const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
         const API_BASE = 'http://localhost:8000/api';
 
         createApp({
@@ -1186,6 +1175,8 @@
                 const importResult = ref(null);
                 const showResetDialog = ref(false);
                 const resetType = ref('');
+                const syncing = ref(false);
+                const lastSyncTime = ref('');
                 const showSubjectEditDialog = ref(false);
                 const showStatsDialog = ref(false);
                 const currentEditSubject = ref('');
@@ -1220,6 +1211,23 @@
                     const second = String(date.getSeconds()).padStart(2, '0');
                     return `${year}-${month}-${day}_${hour}-${minute}-${second}`;
                 };
+                const parseDisplayDateToDateKey = (displayDate) => {
+                    if (!displayDate) return '';
+                    const text = String(displayDate).trim();
+                    const directMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+                    if (directMatch) {
+                        return `${directMatch[1]}-${String(directMatch[2]).padStart(2, '0')}-${String(directMatch[3]).padStart(2, '0')}`;
+                    }
+                    const zhMatch = text.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+                    if (zhMatch) {
+                        return `${zhMatch[1]}-${String(zhMatch[2]).padStart(2, '0')}-${String(zhMatch[3]).padStart(2, '0')}`;
+                    }
+                    const fallback = new Date(text);
+                    if (!Number.isNaN(fallback.getTime())) {
+                        return formatLocalDateKey(fallback);
+                    }
+                    return '';
+                };
                 let homeworkPieInstance = null;
                 let durationPieInstance = null;
                 
@@ -1244,28 +1252,12 @@
                 };
                 
                 // 科目列表（包含系统和自定义）
-                const subjectList = ref([]);
-                const loadSubjectList = () => {
-                    const defaultSubjects = [
-                        { key: 'yuwen', name: '语文', icon: '📖', color: '#e53935', system: true },
-                        { key: 'shuxue', name: '数学', icon: '📐', color: '#1e88e5', system: true },
-                        { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true }
-                    ];
-                    const savedCustomSubjects = localStorage.getItem('customSubjects');
-                    let customSubjects = [];
-                    if (savedCustomSubjects) {
-                        try {
-                            customSubjects = JSON.parse(savedCustomSubjects);
-                        } catch (e) {
-                            console.error('自定义科目加载失败', e);
-                        }
-                    }
-                    subjectList.value = [...defaultSubjects, ...customSubjects];
-                };
-                loadSubjectList();
-                
-                // 科目作业配置（默认）
-                const subjectConfig = ref({
+                const defaultSubjects = [
+                    { key: 'yuwen', name: '语文', icon: '📖', color: '#e53935', system: true },
+                    { key: 'shuxue', name: '数学', icon: '📐', color: '#1e88e5', system: true },
+                    { key: 'yingyu', name: '英语', icon: '🔤', color: '#fb8c00', system: true }
+                ];
+                const createDefaultSubjectConfig = () => ({
                     yuwen: [
                         { name: '背诵', duration: 20 },
                         { name: '预习', duration: 15 },
@@ -1284,16 +1276,48 @@
                         { name: '默写背诵', duration: 20 }
                     ]
                 });
-                
-                // 加载科目配置
-                const savedConfig = localStorage.getItem('subjectConfig');
-                if (savedConfig) {
+                const parseStoredCustomSubjects = (rawValue) => {
+                    if (!rawValue) return [];
                     try {
-                        subjectConfig.value = JSON.parse(savedConfig);
+                        const parsed = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        console.error('自定义科目加载失败', e);
+                        return [];
+                    }
+                };
+                const parseStoredSubjectConfig = (rawValue) => {
+                    if (!rawValue) return createDefaultSubjectConfig();
+                    try {
+                        const parsed = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+                        return (parsed && typeof parsed === 'object') ? parsed : createDefaultSubjectConfig();
                     } catch (e) {
                         console.error('科目配置加载失败', e);
+                        return createDefaultSubjectConfig();
                     }
-                }
+                };
+                const subjectList = ref([]);
+                const subjectConfig = ref(createDefaultSubjectConfig());
+                const getCurrentChildScopedConfig = () => {
+                    if (!currentChildId.value) {
+                        return {
+                            subjectConfig: parseStoredSubjectConfig(localStorage.getItem('subjectConfig')),
+                            customSubjects: parseStoredCustomSubjects(localStorage.getItem('customSubjects'))
+                        };
+                    }
+                    const dataMap = safeParse(CHILDREN_DATA_KEY, {}) || {};
+                    const childData = dataMap[currentChildId.value] || {};
+                    return {
+                        subjectConfig: parseStoredSubjectConfig(childData.subjectConfig || localStorage.getItem('subjectConfig')),
+                        customSubjects: parseStoredCustomSubjects(childData.customSubjects || localStorage.getItem('customSubjects'))
+                    };
+                };
+                const loadSubjectList = () => {
+                    const scoped = getCurrentChildScopedConfig();
+                    subjectConfig.value = parseStoredSubjectConfig(scoped.subjectConfig);
+                    subjectList.value = [...defaultSubjects, ...parseStoredCustomSubjects(scoped.customSubjects)];
+                };
+                loadSubjectList();
 
                 // 从 localStorage 加载（带数据验证）
                 const safeParse = (key, defaultValue) => {
@@ -1360,6 +1384,8 @@
                 };
                 const persistActiveChildData = () => {
                     if (!currentChildId.value) {
+                        localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value || createDefaultSubjectConfig()));
+                        localStorage.setItem('customSubjects', JSON.stringify(subjectList.value.filter(item => item && !item.system)));
                         persistLegacySnapshot();
                         return;
                     }
@@ -1370,10 +1396,14 @@
                         childMood: childMood.value,
                         childAvatar: childAvatar.value,
                         todayHomework: todayList.value,
-                        homeworkHistory: historyList.value
+                        homeworkHistory: historyList.value,
+                        subjectConfig: JSON.parse(JSON.stringify(subjectConfig.value || createDefaultSubjectConfig())),
+                        customSubjects: JSON.parse(JSON.stringify(subjectList.value.filter(item => item && !item.system)))
                     };
                     localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
                     updateChildSummary(currentChildId.value, currentChild.value || childForm.value || defaultChildForm(), childAvatar.value);
+                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value || createDefaultSubjectConfig()));
+                    localStorage.setItem('customSubjects', JSON.stringify(subjectList.value.filter(item => item && !item.system)));
                     persistLegacySnapshot();
                 };
                 const applyChildData = (childId) => {
@@ -1387,6 +1417,8 @@
                     childAvatarDraft.value = childAvatar.value;
                     todayList.value = Array.isArray(data.todayHomework) ? data.todayHomework : [];
                     historyList.value = Array.isArray(data.homeworkHistory) ? data.homeworkHistory : [];
+                    subjectConfig.value = parseStoredSubjectConfig(data.subjectConfig || localStorage.getItem('subjectConfig'));
+                    subjectList.value = [...defaultSubjects, ...parseStoredCustomSubjects(data.customSubjects || localStorage.getItem('customSubjects'))];
                     persistChildrenMeta();
                     persistLegacySnapshot();
                 };
@@ -1424,7 +1456,9 @@
                         childMood: savedMood || 'normal',
                         childAvatar: savedAvatar || '',
                         todayHomework: safeParse('todayHomework', []),
-                        homeworkHistory: safeParse('homeworkHistory', [])
+                        homeworkHistory: safeParse('homeworkHistory', []),
+                        subjectConfig: parseStoredSubjectConfig(localStorage.getItem('subjectConfig')),
+                        customSubjects: parseStoredCustomSubjects(localStorage.getItem('customSubjects'))
                     };
                     localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
                     localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
@@ -1451,79 +1485,64 @@
                 
                 // 自动归档：过了 0 点才归档前一天的数据
                 const autoArchiveYesterday = () => {
-                    if (!savedToday) {
-                        console.log('没有找到当天作业数据');
+                    const todayData = Array.isArray(todayList.value) ? JSON.parse(JSON.stringify(todayList.value)) : [];
+                    if (todayData.length === 0) {
                         return;
                     }
                     
                     try {
-                        const todayData = JSON.parse(savedToday);
-                        
-                        if (!todayData || todayData.length === 0) {
-                            console.log('当天作业数据为空');
-                            return;
-                        }
-                        
                         // 检查是否有已完成的作业
                         const doneItems = todayData.filter(h => h.status === 'done');
                         
                         // 如果有已完成的作业，检查完成日期
                         if (doneItems.length > 0) {
-                            const today = new Date();
-                            const todayKey = formatLocalDateKey(today); // 今天的日期 key
+                            const todayKey = formatLocalDateKey(new Date());
                             
                             // 检查已完成作业的完成日期是否是今天之前（即昨天或更早）
                             const hasOldCompletion = doneItems.some(h => {
-                                if (h.completion_date) {
-                                    // 解析"2026 年 3 月 11 日 星期三"格式
-                                    const dateStr = h.completion_date.replace(/[年月]/g, '-').replace(/[日 ].*/g, '');
-                                    try {
-                                        const itemDate = formatLocalDateKey(new Date(dateStr));
-                                        return itemDate !== todayKey; // 完成日期不是今天
-                                    } catch (e) {
-                                        console.warn('日期解析失败:', h.completion_date);
-                                        return false;
-                                    }
-                                }
-                                return false;
+                                const itemDateKey = parseDisplayDateToDateKey(h.completion_date);
+                                return itemDateKey && itemDateKey !== todayKey;
                             });
                             
                             if (hasOldCompletion) {
-                                // 有过期的已完成作业，需要归档
                                 const yesterday = new Date();
                                 yesterday.setDate(yesterday.getDate() - 1);
                                 const yesterdayKey = formatLocalDateKey(yesterday);
                                 const yesterdayDate = yesterday.getFullYear() + '年' + (yesterday.getMonth() + 1) + '月' + yesterday.getDate() + '日 ' + ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][yesterday.getDay()];
                                 
-                                // 检查是否已经归档
-                                const alreadyArchived = historyList.value.some(h => h.dateKey === yesterdayKey);
-                                if (!alreadyArchived) {
-                                    const archive = {
+                                const existingIndex = historyList.value.findIndex(h => h.dateKey === yesterdayKey);
+                                if (existingIndex >= 0) {
+                                    const existingItems = historyList.value[existingIndex].items || [];
+                                    doneItems.forEach(newItem => {
+                                        const idx = existingItems.findIndex(item => item.template_id === newItem.template_id);
+                                        if (idx >= 0) {
+                                            existingItems[idx] = { ...existingItems[idx], ...newItem };
+                                        } else {
+                                            existingItems.push({ ...newItem });
+                                        }
+                                    });
+                                    historyList.value[existingIndex].items = existingItems;
+                                } else {
+                                    historyList.value.unshift({
                                         date: yesterdayDate,
                                         dateKey: yesterdayKey,
-                                        items: doneItems
-                                    };
-                                    historyList.value.unshift(archive);
-                                    persistActiveChildData();
-                                    console.log('已自动归档昨天的数据');
+                                        items: doneItems.map(item => ({ ...item }))
+                                    });
                                 }
                                 
-                                // 清空今天的作业（因为已经是昨天的数据了）
-                                todayList.value = [];
+                                todayList.value = todayData.filter(item => {
+                                    const itemDateKey = parseDisplayDateToDateKey(item.completion_date);
+                                    return !itemDateKey || itemDateKey === todayKey;
+                                });
                                 persistActiveChildData();
-                                console.log('已清空昨天的作业数据');
+                                console.log('已自动归档前一天完成的数据');
                                 return;
                             }
                         }
                         
-                        // 没有过期数据，恢复今天的作业
-                        todayList.value = todayData;
-                        console.log('已恢复当天作业:', todayData.length, '项');
-                        
+                        console.log('当前作业数据无需自动归档:', todayData.length, '项');
                     } catch (e) {
                         console.error('归档失败:', e);
-                        // 数据损坏时，尝试恢复
-                        todayList.value = safeParse('todayHomework', []);
                     }
                 };
                 autoArchiveYesterday();
@@ -1543,6 +1562,18 @@
                 const doneCount = computed(() => todayList.value.filter(h => h.status === 'done').length);
                 const doingCount = computed(() => todayList.value.filter(h => h.status === 'doing').length);
                 const totalDuration = computed(() => todayList.value.filter(h => h.status === 'done').reduce((sum, h) => sum + parseInt(h.duration || 0), 0));
+                const sortedTodayList = computed(() => {
+                    const statusPriority = { doing: 0, pending: 1, todo: 1, '': 1, done: 2 };
+                    return [...todayList.value].sort((a, b) => {
+                        const aPriority = statusPriority[a?.status] ?? 1;
+                        const bPriority = statusPriority[b?.status] ?? 1;
+                        if (aPriority !== bPriority) return aPriority - bPriority;
+                        const aAbnormal = a?.is_abnormal ? 0 : 1;
+                        const bAbnormal = b?.is_abnormal ? 0 : 1;
+                        if (aAbnormal !== bAbnormal) return aAbnormal - bAbnormal;
+                        return String(a?.template_id || '').localeCompare(String(b?.template_id || ''));
+                    });
+                });
                 const remainingCount = computed(() => Math.max(totalCount.value - doneCount.value, 0));
                 const completionRate = computed(() => totalCount.value > 0 ? Math.round((doneCount.value / totalCount.value) * 100) : 0);
                 const recentStudyDays = computed(() => {
@@ -1556,13 +1587,14 @@
                 });
                 const homeReminders = computed(() => {
                     const tips = [];
+                    tips.push({ text: '下一步：' + primaryHomeAction.value.title, bg: primaryHomeAction.value.bg, color: primaryHomeAction.value.color, border: primaryHomeAction.value.border, actionLabel: primaryHomeAction.value.button, action: primaryHomeAction.value.action });
                     if (!currentChild.value || !currentChild.value.child_name) {
                         tips.push({ text: '还没设置孩子信息，先完善姓名、年龄和年级，统计会更完整。', bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' });
                     }
                     if (totalCount.value === 0) {
                         tips.push({ text: '今天还没布置作业，可以先点“选择作业”快速开始。', bg: '#fff7ed', color: '#c2410c', border: '#fdba74' });
                     } else if (remainingCount.value > 0) {
-                        tips.push({ text: '今天还有 ' + remainingCount.value + ' 项作业没完成，优先把未完成项处理掉。', bg: '#fff7ed', color: '#c2410c', border: '#fdba74' });
+                        tips.push({ text: '当前列表已按未完成优先排好，直接从上往下做就行。', bg: '#fff7ed', color: '#c2410c', border: '#fdba74' });
                     } else {
                         tips.push({ text: '今天的作业已经全部完成，干得漂亮。', bg: '#ecfdf5', color: '#15803d', border: '#86efac' });
                     }
@@ -1575,6 +1607,50 @@
                         tips.push({ text: '今天已累计学习 ' + totalDuration.value + ' 分钟，可以结合历史记录看看哪些科目最花时间。', bg: '#f8fafc', color: '#475569', border: '#cbd5e1' });
                     }
                     return tips;
+                });
+                const primaryHomeAction = computed(() => {
+                    if (!currentChild.value || !currentChild.value.child_name) {
+                        return {
+                            title: '先把孩子信息补完整',
+                            desc: '建议先填写姓名、年龄和年级，后面的统计、提醒和报告会更准确。',
+                            button: '去完善信息',
+                            bg: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '#bfdbfe',
+                            action: () => editChild()
+                        };
+                    }
+                    if (totalCount.value === 0) {
+                        return {
+                            title: '今天还没开始，先布置今日作业',
+                            desc: '从首页直接点“选择作业”，把今天要做的内容先安排好，后面提交会更顺。',
+                            button: '去选择作业',
+                            bg: '#fff7ed',
+                            color: '#c2410c',
+                            border: '#fdba74',
+                            action: () => { showHomeworkSelector.value = true; }
+                        };
+                    }
+                    if (remainingCount.value > 0) {
+                        return {
+                            title: '还有 ' + remainingCount.value + ' 项没完成，优先继续今日任务',
+                            desc: '首页下方就是今日作业列表，先把未完成项处理掉，再去看报告和历史。',
+                            button: '继续完成作业',
+                            bg: '#fefce8',
+                            color: '#a16207',
+                            border: '#fde68a',
+                            action: () => window.scrollTo({ top: 520, behavior: 'smooth' })
+                        };
+                    }
+                    return {
+                        title: '今天已经完成，可以去看报告复盘',
+                        desc: '当前作业已经全部完成，建议切到报告页看本周趋势、异常和重点关注科目。',
+                        button: '查看报告',
+                        bg: '#ecfdf5',
+                        color: '#15803d',
+                        border: '#86efac',
+                        action: () => { currentTab.value = 'report'; }
+                    };
                 });
                 const abnormalSummary = computed(() => {
                     const todayAbnormalCount = todayList.value.filter(item => item.status === 'done' && item.is_abnormal).length;
@@ -1851,14 +1927,23 @@
                         showToast('请至少选择一项作业', 'error');
                         return;
                     }
-                    todayList.value = homeworkList.value.filter(h => h.selected).map(h => ({
-                        ...h,
-                        status: 'doing',
-                        duration: ''
-                    }));
+                    const selectedItems = homeworkList.value
+                        .filter(h => h.selected)
+                        .map(h => ({
+                            ...h,
+                            status: 'doing',
+                            duration: ''
+                        }));
+                    const existingMap = new Map((todayList.value || []).map(item => [item.template_id, item]));
+                    selectedItems.forEach(item => {
+                        if (!existingMap.has(item.template_id)) {
+                            existingMap.set(item.template_id, item);
+                        }
+                    });
+                    todayList.value = Array.from(existingMap.values());
                     persistActiveChildData();
                     showHomeworkSelector.value = false;
-                    showToast('已布置 ' + selectedCount.value + ' 项作业', 'success');
+                    showToast('已布置 ' + selectedItems.length + ' 项作业', 'success');
                 };
 
                 const archiveToday = () => {
@@ -2025,7 +2110,7 @@
                     const data = {
                         schemaVersion: 3,
                         appVersion: '3.0',
-                        version: '1.0',
+                        version: '3.0',
                         exportTime: new Date().toISOString(),
                         data: {
                             currentChild: currentChild.value,
@@ -2341,6 +2426,24 @@
                     if (payload.subjectConfig && typeof payload.subjectConfig !== 'object') {
                         throw new Error('科目配置格式不正确');
                     }
+                    const hasChildrenList = Array.isArray(payload.childrenList) && payload.childrenList.length > 0;
+                    const hasChildrenData = payload.childrenData && typeof payload.childrenData === 'object';
+                    if (hasChildrenList !== !!hasChildrenData) {
+                        throw new Error('多孩子备份结构不完整');
+                    }
+                    if (hasChildrenList && hasChildrenData) {
+                        const childIds = payload.childrenList.map(item => item && item.id).filter(Boolean);
+                        if (childIds.length === 0) {
+                            throw new Error('多孩子备份缺少有效孩子标识');
+                        }
+                        const missingIds = childIds.filter(id => !payload.childrenData[id]);
+                        if (missingIds.length > 0) {
+                            throw new Error('多孩子备份缺少孩子数据：' + missingIds.join('、'));
+                        }
+                        if (payload.currentChildId && !payload.childrenData[payload.currentChildId]) {
+                            throw new Error('备份中的当前孩子标识无效');
+                        }
+                    }
                 };
 
                 const buildImportPreview = (payload, fileName) => {
@@ -2366,45 +2469,55 @@
                     importMode.value = 'replace';
                 };
 
-                const applyImportPayload = (payload) => {
-                    if (payload.childrenList && payload.childrenList.length > 0 && payload.childrenData) {
-                        childrenList.value = payload.childrenList;
-                        localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
-                        localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(payload.childrenData));
-                        const nextId = payload.currentChildId || payload.childrenList[0]?.id || '';
-                        applyChildData(nextId);
-                    } else if (payload.currentChild) {
-                        const nextId = currentChildId.value || ('child_' + Date.now());
-                        currentChildId.value = nextId;
-                        currentChild.value = payload.currentChild;
-                        childForm.value = payload.childForm || payload.currentChild;
-                        childMood.value = payload.childMood || 'normal';
-                        childAvatar.value = payload.childAvatar || '';
-                        childAvatarDraft.value = childAvatar.value;
-                        updateChildSummary(nextId, currentChild.value, childAvatar.value);
-                        persistActiveChildData();
-                    }
-                    if (payload.subjectConfig) {
-                        delete payload.subjectConfig.wuli;
-                        subjectConfig.value = payload.subjectConfig;
-                        localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
-                    }
-                    if (payload.customSubjects) {
-                        try {
-                            const customSubjects = typeof payload.customSubjects === 'string' ? JSON.parse(payload.customSubjects) : payload.customSubjects;
-                            localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
-                        } catch (e) {
-                            console.error('自定义科目解析失败', e);
-                        }
+                const parseImportedCustomSubjects = (customSubjects) => {
+                    if (!customSubjects) return [];
+                    try {
+                        const parsed = typeof customSubjects === 'string' ? JSON.parse(customSubjects) : customSubjects;
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        console.error('自定义科目解析失败', e);
+                        return [];
                     }
                 };
 
-                const mergeHistoryRecords = (incomingHistory) => {
+                const normalizeChildRecord = (data = {}) => ({
+                    currentChild: data.currentChild || null,
+                    childForm: data.childForm || data.currentChild || defaultChildForm(),
+                    childMood: data.childMood || 'normal',
+                    childAvatar: data.childAvatar || '',
+                    todayHomework: Array.isArray(data.todayHomework) ? data.todayHomework : [],
+                    homeworkHistory: Array.isArray(data.homeworkHistory) ? data.homeworkHistory : [],
+                    subjectConfig: parseStoredSubjectConfig(data.subjectConfig),
+                    customSubjects: parseStoredCustomSubjects(data.customSubjects)
+                });
+
+                const mergeTodayHomework = (baseToday = [], incomingToday = []) => {
+                    const todayMap = new Map((Array.isArray(baseToday) ? baseToday : []).map(item => [`${item.template_id || item.task_name}`, item]));
+                    let addedCount = 0;
+                    let skippedCount = 0;
+                    (Array.isArray(incomingToday) ? incomingToday : []).forEach(item => {
+                        const key = `${item.template_id || item.task_name}`;
+                        if (!todayMap.has(key)) {
+                            todayMap.set(key, item);
+                            addedCount++;
+                        } else {
+                            skippedCount++;
+                        }
+                    });
+                    return {
+                        mergedList: Array.from(todayMap.values()),
+                        addedCount,
+                        skippedCount
+                    };
+                };
+
+                const mergeHistoryRecords = (baseHistory = [], incomingHistory = []) => {
                     const map = new Map();
                     let mergedHistoryItems = 0;
                     let skippedDuplicates = 0;
 
-                    historyList.value.forEach(day => {
+                    (Array.isArray(baseHistory) ? baseHistory : []).forEach(day => {
+                        if (!day || !day.dateKey) return;
                         map.set(day.dateKey, {
                             date: day.date,
                             dateKey: day.dateKey,
@@ -2412,7 +2525,7 @@
                         });
                     });
 
-                    incomingHistory.forEach(day => {
+                    (Array.isArray(incomingHistory) ? incomingHistory : []).forEach(day => {
                         if (!day || !day.dateKey) return;
                         if (!map.has(day.dateKey)) {
                             map.set(day.dateKey, {
@@ -2441,6 +2554,166 @@
                     return { mergedList, mergedHistoryItems, skippedDuplicates };
                 };
 
+                const applyImportedSubjectData = (payload, replaceMode = false) => {
+                    const importedSubjectConfig = payload.subjectConfig ? parseStoredSubjectConfig(payload.subjectConfig) : null;
+                    const importedCustomSubjects = parseImportedCustomSubjects(payload.customSubjects);
+
+                    if (payload.childrenList && payload.childrenList.length > 0 && payload.childrenData) {
+                        const dataMap = getChildrenDataMap();
+                        const targetId = currentChildId.value;
+                        if (targetId && dataMap[targetId]) {
+                            if (importedSubjectConfig) {
+                                dataMap[targetId].subjectConfig = importedSubjectConfig;
+                            }
+                            if (replaceMode || payload.customSubjects) {
+                                dataMap[targetId].customSubjects = importedCustomSubjects;
+                            }
+                            localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
+                        }
+                    } else {
+                        if (importedSubjectConfig) {
+                            subjectConfig.value = importedSubjectConfig;
+                        }
+                        if (replaceMode || payload.customSubjects) {
+                            const mergedCustomSubjects = replaceMode
+                                ? importedCustomSubjects
+                                : (() => {
+                                    const existingCustomSubjects = subjectList.value.filter(item => item && !item.system);
+                                    const subjectMap = new Map(existingCustomSubjects.map(item => [item.key, item]));
+                                    importedCustomSubjects.forEach(item => {
+                                        if (item && item.key) {
+                                            subjectMap.set(item.key, item);
+                                        }
+                                    });
+                                    return Array.from(subjectMap.values());
+                                })();
+                            subjectList.value = [...defaultSubjects, ...mergedCustomSubjects];
+                        }
+                        persistActiveChildData();
+                    }
+                    loadSubjectList();
+                    loadData();
+                };
+
+                const applyReplaceImportPayload = (payload) => {
+                    if (payload.childrenList && payload.childrenList.length > 0 && payload.childrenData) {
+                        const sanitizedData = {};
+                        payload.childrenList.forEach(item => {
+                            if (item && item.id && payload.childrenData[item.id]) {
+                                sanitizedData[item.id] = normalizeChildRecord(payload.childrenData[item.id]);
+                            }
+                        });
+                        childrenList.value = payload.childrenList.filter(item => item && item.id && sanitizedData[item.id]);
+                        localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
+                        localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(sanitizedData));
+                        const nextId = (payload.currentChildId && sanitizedData[payload.currentChildId]) ? payload.currentChildId : (childrenList.value[0]?.id || '');
+                        applyChildData(nextId);
+                    } else if (payload.currentChild) {
+                        const nextId = currentChildId.value || ('child_' + Date.now());
+                        currentChildId.value = nextId;
+                        currentChild.value = payload.currentChild;
+                        childForm.value = payload.childForm || payload.currentChild;
+                        childMood.value = payload.childMood || 'normal';
+                        childAvatar.value = payload.childAvatar || '';
+                        childAvatarDraft.value = childAvatar.value;
+                        todayList.value = payload.todayHomework;
+                        historyList.value = payload.homeworkHistory;
+                        updateChildSummary(nextId, currentChild.value, childAvatar.value);
+                        persistActiveChildData();
+                    } else {
+                        todayList.value = payload.todayHomework;
+                        historyList.value = payload.homeworkHistory;
+                        persistActiveChildData();
+                    }
+                    applyImportedSubjectData(payload, true);
+                };
+
+                const applyMergeImportPayload = (payload) => {
+                    let addedHistoryDays = 0;
+                    let mergedHistoryItems = 0;
+                    let skippedDuplicates = 0;
+                    let todayAction = '无新增';
+
+                    if (payload.childrenList && payload.childrenList.length > 0 && payload.childrenData) {
+                        const existingDataMap = getChildrenDataMap();
+                        const mergedDataMap = { ...existingDataMap };
+                        const summaryMap = new Map(childrenList.value.map(item => [item.id, item]));
+
+                        payload.childrenList.forEach(summary => {
+                            if (!summary || !summary.id || !payload.childrenData[summary.id]) return;
+                            const incomingRecord = normalizeChildRecord(payload.childrenData[summary.id]);
+                            if (mergedDataMap[summary.id]) {
+                                const existingRecord = normalizeChildRecord(mergedDataMap[summary.id]);
+                                const mergedToday = mergeTodayHomework(existingRecord.todayHomework, incomingRecord.todayHomework);
+                                const mergedHistory = mergeHistoryRecords(existingRecord.homeworkHistory, incomingRecord.homeworkHistory);
+                                mergedDataMap[summary.id] = {
+                                    currentChild: incomingRecord.currentChild || existingRecord.currentChild,
+                                    childForm: incomingRecord.childForm || existingRecord.childForm,
+                                    childMood: incomingRecord.childMood || existingRecord.childMood,
+                                    childAvatar: incomingRecord.childAvatar || existingRecord.childAvatar,
+                                    todayHomework: mergedToday.mergedList,
+                                    homeworkHistory: mergedHistory.mergedList
+                                };
+                                mergedHistoryItems += mergedHistory.mergedHistoryItems;
+                                skippedDuplicates += mergedHistory.skippedDuplicates + mergedToday.skippedCount;
+                            } else {
+                                mergedDataMap[summary.id] = incomingRecord;
+                                addedHistoryDays += incomingRecord.homeworkHistory.length;
+                                mergedHistoryItems += incomingRecord.homeworkHistory.reduce((sum, day) => sum + ((day && Array.isArray(day.items)) ? day.items.length : 0), 0);
+                            }
+                            summaryMap.set(summary.id, { ...summaryMap.get(summary.id), ...summary });
+                        });
+
+                        childrenList.value = Array.from(summaryMap.values());
+                        localStorage.setItem(CHILDREN_LIST_KEY, JSON.stringify(childrenList.value));
+                        localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(mergedDataMap));
+                        const nextId = currentChildId.value || ((payload.currentChildId && mergedDataMap[payload.currentChildId]) ? payload.currentChildId : (childrenList.value[0]?.id || ''));
+                        applyChildData(nextId);
+                        todayAction = '多孩子数据已合并';
+                    } else {
+                        const existingHistoryDays = historyList.value.length;
+                        const mergedHistory = mergeHistoryRecords(historyList.value, payload.homeworkHistory);
+                        historyList.value = mergedHistory.mergedList;
+                        addedHistoryDays = Math.max(mergedHistory.mergedList.length - existingHistoryDays, 0);
+                        mergedHistoryItems = mergedHistory.mergedHistoryItems;
+                        skippedDuplicates += mergedHistory.skippedDuplicates;
+
+                        const mergedToday = mergeTodayHomework(todayList.value, payload.todayHomework);
+                        todayList.value = mergedToday.mergedList;
+                        skippedDuplicates += mergedToday.skippedCount;
+                        todayAction = payload.todayHomework.length > 0 ? `已合并，当前 ${todayList.value.length} 项` : '无新增';
+
+                        if (payload.currentChild) {
+                            const nextId = currentChildId.value || ('child_' + Date.now());
+                            currentChildId.value = nextId;
+                            currentChild.value = payload.currentChild;
+                            childForm.value = payload.childForm || payload.currentChild;
+                            childMood.value = payload.childMood || childMood.value || 'normal';
+                            childAvatar.value = payload.childAvatar || childAvatar.value || '';
+                            childAvatarDraft.value = childAvatar.value;
+                            updateChildSummary(nextId, currentChild.value, childAvatar.value);
+                        }
+                        persistActiveChildData();
+                    }
+
+                    applyImportedSubjectData(payload, false);
+                    return {
+                        addedHistoryDays,
+                        mergedHistoryItems,
+                        skippedDuplicates,
+                        todayAction
+                    };
+                };
+
+                const refreshReportIfNeeded = () => {
+                    if (currentTab.value === 'report') {
+                        setTimeout(() => {
+                            renderTrendChart();
+                            renderPieCharts();
+                        }, 100);
+                    }
+                };
+
                 const confirmImport = () => {
                     try {
                         if (!importPendingData.value) {
@@ -2454,38 +2727,19 @@
                         let skippedDuplicates = 0;
                         let todayAction = '未导入';
 
-                        applyImportPayload(payload);
-
                         if (importMode.value === 'replace') {
-                            todayList.value = payload.todayHomework;
-                            historyList.value = payload.homeworkHistory;
-                            persistActiveChildData();
+                            applyReplaceImportPayload(payload);
                             addedHistoryDays = payload.homeworkHistory.length;
                             todayAction = payload.todayHomework.length > 0 ? `已覆盖 ${payload.todayHomework.length} 项` : '已清空并覆盖';
                         } else {
-                            const existingHistoryDays = historyList.value.length;
-                            const merged = mergeHistoryRecords(payload.homeworkHistory);
-                            historyList.value = merged.mergedList;
-                            addedHistoryDays = Math.max(merged.mergedList.length - existingHistoryDays, 0);
-                            mergedHistoryItems = merged.mergedHistoryItems;
-                            skippedDuplicates = merged.skippedDuplicates;
-
-                            const todayMap = new Map(todayList.value.map(item => [`${item.template_id || item.task_name}`, item]));
-                            payload.todayHomework.forEach(item => {
-                                const key = `${item.template_id || item.task_name}`;
-                                if (!todayMap.has(key)) {
-                                    todayMap.set(key, item);
-                                } else {
-                                    skippedDuplicates++;
-                                }
-                            });
-                            todayList.value = Array.from(todayMap.values());
-                            persistActiveChildData();
-                            todayAction = payload.todayHomework.length > 0 ? `已合并，当前 ${todayList.value.length} 项` : '无新增';
+                            const mergedResult = applyMergeImportPayload(payload);
+                            addedHistoryDays = mergedResult.addedHistoryDays;
+                            mergedHistoryItems = mergedResult.mergedHistoryItems;
+                            skippedDuplicates = mergedResult.skippedDuplicates;
+                            todayAction = mergedResult.todayAction;
                         }
 
-                        loadSubjectList();
-                        loadData();
+                        refreshReportIfNeeded();
                         importResult.value = {
                             modeText: importMode.value === 'replace' ? '覆盖恢复' : '合并恢复',
                             addedHistoryDays,
@@ -2630,8 +2884,8 @@
                 const saveAbnormalNote = () => {
                     if (currentEditItem.value) {
                         currentEditItem.value.abnormal_note = abnormalNoteForm.value;
-                        const todayKey = formatLocalDateKey();
-                        const dayIndex = historyList.value.findIndex(d => d.dateKey === todayKey);
+                        const targetDateKey = currentEditItem.value.dateKey || parseDisplayDateToDateKey(currentEditItem.value.completion_date) || formatLocalDateKey();
+                        const dayIndex = historyList.value.findIndex(d => d.dateKey === targetDateKey);
                         if (dayIndex >= 0) {
                             const itemIndex = historyList.value[dayIndex].items.findIndex(i => i.template_id === currentEditItem.value.template_id);
                             if (itemIndex >= 0) {
@@ -2719,6 +2973,39 @@
                     item.duration = parseInt(item.duration);
                 };
 
+                const applySmartDurationDefault = (item) => {
+                    if (!item || item.status === 'done') return;
+                    const currentValue = String(item.duration ?? '').trim();
+                    if (currentValue !== '' && currentValue !== '0' && !Number.isNaN(parseInt(currentValue, 10))) {
+                        return;
+                    }
+                    const avgDuration = parseInt(getAverageDuration(item.task_name) || 0, 10);
+                    const expectedDuration = parseInt(item.expected_duration || 0, 10);
+                    const smartValue = avgDuration > 0 ? avgDuration : expectedDuration;
+                    if (smartValue > 0) {
+                        item.duration = smartValue;
+                    }
+                };
+
+                const focusNextPendingHomework = async (completedItem) => {
+                    await nextTick();
+                    const nextItem = sortedTodayList.value.find(entry => entry && entry.status !== 'done' && entry.template_id !== completedItem.template_id);
+                    if (!nextItem) return;
+                    applySmartDurationDefault(nextItem);
+                    await nextTick();
+                    const targetInput = document.querySelector(`#duration-input-${nextItem.template_id}`);
+                    const targetCard = targetInput ? targetInput.closest('.homework-item') : document.querySelector(`[data-homework-id="${nextItem.template_id}"]`);
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    if (targetInput) {
+                        setTimeout(() => {
+                            targetInput.focus();
+                            targetInput.select?.();
+                        }, 220);
+                    }
+                };
+
                 const submit = (item) => {
                     if (!item.duration) {
                         showToast('请输入用时', 'error');
@@ -2742,6 +3029,7 @@
                         item.average_duration = avgDuration;
                         persistActiveChildData();
                         showToast('提交成功！太棒了！', 'success');
+                        focusNextPendingHomework(item);
                     }
                     
                     // 同步到历史记录
@@ -2781,28 +3069,22 @@
                     // 过滤空任务
                     currentSubjectTasks.value = currentSubjectTasks.value.filter(t => t.name.trim());
                     subjectConfig.value[currentEditSubject.value] = currentSubjectTasks.value;
-                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
                     
                     // 如果是自定义科目，更新名称、图标、颜色
                     const subject = subjectList.value.find(s => s.key === currentEditSubject.value);
                     if (subject && !subject.system) {
-                        const savedCustomSubjects = localStorage.getItem('customSubjects');
-                        let customSubjects = [];
-                        if (savedCustomSubjects) {
-                            try {
-                                customSubjects = JSON.parse(savedCustomSubjects);
-                            } catch (e) {}
-                        }
+                        const customSubjects = subjectList.value.filter(item => item && !item.system);
                         const index = customSubjects.findIndex(s => s.key === currentEditSubject.value);
                         if (index >= 0) {
                             customSubjects[index].name = currentEditSubjectName.value.trim();
                             customSubjects[index].icon = currentEditSubjectIcon.value;
                             customSubjects[index].color = currentEditSubjectColor.value;
-                            localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
-                            loadSubjectList(); // 重新加载科目列表
+                            subjectList.value = [...defaultSubjects, ...customSubjects];
                         }
                     }
                     
+                    persistActiveChildData();
+                    loadSubjectList();
                     loadData(); // 重新加载作业模板，实时生效
                     // 如果当前在报告页，重新渲染图表更新颜色
                     if (currentTab.value === 'report') {
@@ -2835,22 +3117,15 @@
                         color: newSubjectForm.value.color,
                         system: false
                     };
-                    // 保存到自定义科目
-                    const savedCustomSubjects = localStorage.getItem('customSubjects');
-                    let customSubjects = [];
-                    if (savedCustomSubjects) {
-                        try {
-                            customSubjects = JSON.parse(savedCustomSubjects);
-                        } catch (e) {}
-                    }
+                    const customSubjects = subjectList.value.filter(item => item && !item.system);
                     customSubjects.push(newSubject);
-                    localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+                    subjectList.value = [...defaultSubjects, ...customSubjects];
                     // 初始化科目配置，默认添加2个作业
                     subjectConfig.value[key] = [
                         { name: '练习', duration: 30 },
                         { name: '试卷', duration: 60 }
                     ];
-                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    persistActiveChildData();
                     loadSubjectList();
                     loadData();
                     // 如果当前在报告页，重新渲染图表更新颜色
@@ -2862,7 +3137,7 @@
                     }
                     showAddSubjectDialog.value = false;
                     // 重置表单，避免下次打开残留上次内容
-                    newSubjectForm = { name: '', icon: '📚', color: getUnusedColor() };
+                    newSubjectForm.value = { name: '', icon: '📚', color: getUnusedColor() };
                     showToast('科目已添加', 'success');
                 };
 
@@ -2871,19 +3146,10 @@
                     if (!confirm('确定要删除这个科目吗？相关作业数据不会丢失，但科目配置会被删除。')) {
                         return;
                     }
-                    // 从自定义科目中删除
-                    const savedCustomSubjects = localStorage.getItem('customSubjects');
-                    let customSubjects = [];
-                    if (savedCustomSubjects) {
-                        try {
-                            customSubjects = JSON.parse(savedCustomSubjects);
-                        } catch (e) {}
-                    }
-                    customSubjects = customSubjects.filter(s => s.key !== subjectKey);
-                    localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
-                    // 从科目配置中删除
+                    const customSubjects = subjectList.value.filter(item => item && !item.system && item.key !== subjectKey);
+                    subjectList.value = [...defaultSubjects, ...customSubjects];
                     delete subjectConfig.value[subjectKey];
-                    localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
+                    persistActiveChildData();
                     loadSubjectList();
                     loadData();
                     // 如果当前在报告页，重新渲染图表更新颜色
@@ -2899,27 +3165,18 @@
                 // 恢复默认模板
                 const resetToDefaultTemplates = () => {
                     if (confirm('确定恢复默认作业模板吗？\n\n语文：背诵、预习、默写、练习册、作文\n数学：练习册、试卷、错题整理\n英语：练习册、试卷、默写背诵')) {
-                        subjectConfig.value = {
-                            yuwen: [
-                                { name: '背诵', duration: 20 },
-                                { name: '预习', duration: 15 },
-                                { name: '默写', duration: 20 },
-                                { name: '练习册', duration: 30 },
-                                { name: '作文', duration: 40 }
-                            ],
-                            shuxue: [
-                                { name: '练习册', duration: 30 },
-                                { name: '试卷', duration: 60 },
-                                { name: '错题整理', duration: 30 }
-                            ],
-                            yingyu: [
-                                { name: '练习册', duration: 25 },
-                                { name: '试卷', duration: 45 },
-                                { name: '默写背诵', duration: 20 }
-                            ]
-                        };
-                        localStorage.setItem('subjectConfig', JSON.stringify(subjectConfig.value));
-                        showToast('已恢复默认模板', 'success');
+                        subjectConfig.value = createDefaultSubjectConfig();
+                        subjectList.value = [...defaultSubjects];
+                        persistActiveChildData();
+                        loadSubjectList();
+                        loadData();
+                        if (currentTab.value === 'report') {
+                            setTimeout(() => {
+                                renderTrendChart();
+                                renderPieCharts();
+                            }, 100);
+                        }
+                        showToast('已恢复当前孩子的默认模板', 'success');
                     }
                 };
 
@@ -2945,38 +3202,19 @@
                         Object.keys(dataMap).forEach(key => {
                             dataMap[key].todayHomework = [];
                             dataMap[key].homeworkHistory = [];
+                            dataMap[key].subjectConfig = createDefaultSubjectConfig();
+                            dataMap[key].customSubjects = [];
                         });
                         localStorage.setItem(CHILDREN_DATA_KEY, JSON.stringify(dataMap));
                         historyList.value = [];
                         todayList.value = [];
                         homeworkList.value.forEach(h => h.selected = false);
+                        subjectConfig.value = createDefaultSubjectConfig();
+                        subjectList.value = [...defaultSubjects];
                         persistActiveChildData();
-                        // 恢复默认科目
-                        localStorage.removeItem('customSubjects');
-                        localStorage.removeItem('subjectConfig');
-                        // 重新加载数据
-                        subjectConfig.value = {
-                            yuwen: [
-                                { name: '背诵', duration: 20 },
-                                { name: '预习', duration: 15 },
-                                { name: '默写', duration: 20 },
-                                { name: '练习册', duration: 30 },
-                                { name: '作文', duration: 40 }
-                            ],
-                            shuxue: [
-                                { name: '练习册', duration: 30 },
-                                { name: '试卷', duration: 60 },
-                                { name: '错题整理', duration: 30 }
-                            ],
-                            yingyu: [
-                                { name: '练习册', duration: 25 },
-                                { name: '试卷', duration: 45 },
-                                { name: '默写背诵', duration: 20 }
-                            ]
-                        };
                         loadSubjectList();
                         loadData();
-                        showToast('全部数据已重置，已恢复默认科目', 'success');
+                        showToast('全部数据已重置，所有孩子已恢复默认科目', 'success');
                     }
                     showResetDialog.value = false;
                     showDataDialog.value = false;
@@ -3008,7 +3246,6 @@
                 };
                 
                 const editChildFromSettings = () => {
-                    showSettingsDialog.value = false;
                     editChild();
                 };
 
@@ -3394,7 +3631,7 @@
                     showSubjectEditDialog, showStatsDialog, statsSummary,
                     currentEditSubject, currentEditSubjectName, currentEditSubjectIcon, currentEditSubjectColor, currentSubjectTasks, subjectConfig, gradeOptions,
                     currentTab, studyDays, weekStats, previousWeekStats, reportInsights, subjectStats, subjectHomeworkRank, subjectDurationRank,
-                    yuwenList, shuxueList, yingyuList, selectedCount, totalCount, doneCount, doingCount, totalDuration, remainingCount, completionRate, recentStudyDays, homeReminders, abnormalSummary, currentDate,
+                    yuwenList, shuxueList, yingyuList, selectedCount, totalCount, doneCount, doingCount, totalDuration, sortedTodayList, remainingCount, completionRate, recentStudyDays, homeReminders, primaryHomeAction, abnormalSummary, currentDate,
                     getSubjectClass, getSubjectColor, getMoodEmoji, saveMood, getCompareClass, getCompareText, getAverageDuration, isAbnormal, getAbnormalText, showAbnormalNote, saveAbnormalNote,
                     getSubjectSummary, editSubject, addTask, removeTask, saveSubjectSettings, editChildFromSettings, resetToDefaultTemplates, triggerAvatarUpload,
                     showStatsChart, renderTrendChart, renderPieCharts, calculateAgeAndGrade, addNewSubject, saveNewSubject, deleteSubject, exportExcel, subjectList, showAddSubjectDialog, newSubjectForm, commonEmojis, getUnusedColor,
